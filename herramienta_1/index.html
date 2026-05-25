@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matriz ROI Rápido · Taller Innovación Ambidiestra</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #1a1a18; --paper: #f7f4ee; --accent: #c8502a; --accent-light: #f0ddd5;
+    --mid: #6b6860; --line: #d4cfc4; --white: #ffffff;
+    --green: #2a6644; --green-light: #d4ede1; --amber: #a85c12; --amber-light: #faebd7;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; padding: 40px 24px 60px; }
+  .page { max-width: 760px; margin: 0 auto; }
+  .header { border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 32px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); font-weight: 500; margin-bottom: 8px; }
+  h1 { font-family: 'DM Serif Display', serif; font-size: 38px; line-height: 1.1; color: var(--ink); }
+  .subtitle { font-size: 14px; color: var(--mid); margin-top: 10px; line-height: 1.6; }
+  .meta { display: flex; gap: 20px; margin-top: 16px; flex-wrap: wrap; }
+  .meta span { font-size: 12px; color: var(--mid); border: 1px solid var(--line); padding: 4px 12px; border-radius: 100px; }
+  .section { margin-bottom: 28px; }
+  .section-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); font-weight: 500; margin-bottom: 10px; border-left: 3px solid var(--accent); padding-left: 10px; }
+  .field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-group.single { grid-template-columns: 1fr; }
+  label { display: block; font-size: 12px; color: var(--mid); margin-bottom: 5px; font-weight: 500; }
+  input[type="text"], input[type="number"], textarea { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); padding: 10px 12px; outline: none; transition: border-color .2s; }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 70px; }
+  .criteria-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .criterion { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+  .criterion .crit-label { font-size: 12px; font-weight: 500; color: var(--ink); margin-bottom: 8px; }
+  .criterion .crit-desc { font-size: 11px; color: var(--mid); margin-bottom: 10px; line-height: 1.5; }
+  .stars { display: flex; gap: 6px; }
+  .star { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 4px; background: none; font-size: 14px; cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center; color: var(--mid); font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .star.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .resultado { background: var(--ink); color: #fff; border-radius: 8px; padding: 24px; margin-top: 28px; }
+  .resultado h3 { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 16px; }
+  .score-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .score-num { font-size: 48px; font-family: 'DM Serif Display', serif; color: #fff; line-height: 1; }
+  .score-max { font-size: 14px; color: rgba(255,255,255,.5); }
+  .verdict { border-radius: 4px; padding: 10px 14px; font-size: 13px; font-weight: 500; margin-top: 12px; }
+  .verdict.high { background: var(--green); color: #d4ede1; }
+  .verdict.mid-v { background: var(--amber); color: #faebd7; }
+  .verdict.low { background: #444; color: #bbb; }
+  .barra-wrap { margin-top: 14px; }
+  .barra-label { font-size: 11px; color: rgba(255,255,255,.5); margin-bottom: 6px; }
+  .barra-bg { background: rgba(255,255,255,.15); border-radius: 100px; height: 8px; overflow: hidden; }
+  .barra-fill { height: 100%; border-radius: 100px; background: var(--accent); transition: width .5s cubic-bezier(.4,0,.2,1); }
+  .reco-box { margin-top: 14px; background: rgba(255,255,255,.08); border-radius: 6px; padding: 12px 14px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,.85); }
+  .download-bar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 24px; }
+  .download-hint { font-size: 12px; color: var(--mid); }
+  .btn-pdf { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: white; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; padding: 12px 24px; cursor: pointer; transition: all .2s; }
+  .btn-pdf:hover { background: #2e2b25; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+  .btn-pdf:disabled { background: #aaa; cursor: not-allowed; transform: none; box-shadow: none; }
+  .progress-bar-wrap { display: none; align-items: center; gap: 12px; margin-top: 10px; font-size: 12px; color: var(--mid); }
+  .progress-bar-wrap.visible { display: flex; }
+  .progress-bar-track { flex: 1; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width .3s; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .footer .brand { font-size: 11px; color: var(--mid); font-style: italic; }
+  .footer .logo { font-family: 'DM Serif Display', serif; font-size: 13px; color: var(--accent); }
+  @media (max-width: 520px) { h1 { font-size: 28px; } .field-group, .criteria-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="eyebrow">Herramienta 1 de 4 · Taller Innovación Ambidiestra</div>
+    <h1>Matriz ROI Rápido</h1>
+    <p class="subtitle">Evalúa en menos de 10 minutos si una iniciativa vale la pena antes de invertir tiempo y dinero.</p>
+    <div class="meta">
+      <span>📋 Instrucciones: llena cada campo</span>
+      <span>⏱ 8–10 minutos</span>
+      <span>📊 Puntaje automático</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Tu empresa</div>
+    <div class="field-group">
+      <div><label>Nombre de la empresa</label><input type="text" id="empresa" placeholder="Ej. Distribuidora El Sol SAC" oninput="calcular()"></div>
+      <div><label>Sector / Rubro</label><input type="text" id="sector" placeholder="Ej. Comercio mayorista" oninput="calcular()"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">La iniciativa a evaluar</div>
+    <div class="field-group single">
+      <div><label>¿Cuál es la iniciativa o mejora que estás considerando?</label><textarea id="iniciativa" placeholder="Ej. Implementar un sistema de pedidos online para clientes mayoristas" oninput="calcular()"></textarea></div>
+    </div>
+    <div class="field-group" style="margin-top:12px">
+      <div><label>Inversión estimada (S/.)</label><input type="number" id="inversion" placeholder="Ej. 5000" oninput="calcular()"></div>
+      <div><label>Tiempo de implementación estimado</label><input type="text" id="tiempo" placeholder="Ej. 2 meses" oninput="calcular()"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Puntúa cada criterio del 1 al 4</div>
+    <div class="criteria-grid">
+      <div class="criterion"><div class="crit-label">💰 Impacto en ingresos</div><div class="crit-desc">¿Qué tan probable es que genere ingresos nuevos o ahorro significativo?</div><div class="stars" id="stars-1"><button class="star" onclick="setStar(1,1)">1</button><button class="star" onclick="setStar(1,2)">2</button><button class="star" onclick="setStar(1,3)">3</button><button class="star" onclick="setStar(1,4)">4</button></div></div>
+      <div class="criterion"><div class="crit-label">⚡ Facilidad de implementación</div><div class="crit-desc">¿Qué tan fácil es de ejecutar con los recursos actuales?</div><div class="stars" id="stars-2"><button class="star" onclick="setStar(2,1)">1</button><button class="star" onclick="setStar(2,2)">2</button><button class="star" onclick="setStar(2,3)">3</button><button class="star" onclick="setStar(2,4)">4</button></div></div>
+      <div class="criterion"><div class="crit-label">👥 Aceptación del equipo</div><div class="crit-desc">¿Tu equipo adoptaría el cambio sin mucha resistencia?</div><div class="stars" id="stars-3"><button class="star" onclick="setStar(3,1)">1</button><button class="star" onclick="setStar(3,2)">2</button><button class="star" onclick="setStar(3,3)">3</button><button class="star" onclick="setStar(3,4)">4</button></div></div>
+      <div class="criterion"><div class="crit-label">🏆 Ventaja competitiva</div><div class="crit-desc">¿Te diferencia claramente de la competencia en el mercado?</div><div class="stars" id="stars-4"><button class="star" onclick="setStar(4,1)">1</button><button class="star" onclick="setStar(4,2)">2</button><button class="star" onclick="setStar(4,3)">3</button><button class="star" onclick="setStar(4,4)">4</button></div></div>
+      <div class="criterion"><div class="crit-label">🔄 Velocidad de retorno</div><div class="crit-desc">¿En cuánto tiempo podrías ver resultados concretos?</div><div class="stars" id="stars-5"><button class="star" onclick="setStar(5,1)">1</button><button class="star" onclick="setStar(5,2)">2</button><button class="star" onclick="setStar(5,3)">3</button><button class="star" onclick="setStar(5,4)">4</button></div></div>
+      <div class="criterion"><div class="crit-label">🎯 Alineación con el negocio core</div><div class="crit-desc">¿Refuerza lo que ya haces bien, sin distraer la operación?</div><div class="stars" id="stars-6"><button class="star" onclick="setStar(6,1)">1</button><button class="star" onclick="setStar(6,2)">2</button><button class="star" onclick="setStar(6,3)">3</button><button class="star" onclick="setStar(6,4)">4</button></div></div>
+    </div>
+  </div>
+
+  <div class="resultado" id="resultado">
+    <h3>Resultado de la evaluación</h3>
+    <div class="score-row">
+      <div><div class="score-num" id="score-num">–</div><div class="score-max">de 24 puntos posibles</div></div>
+      <div style="text-align:right; font-size:13px; color:rgba(255,255,255,.5); max-width:180px; line-height:1.5" id="empresa-display">Completa los criterios para ver tu puntaje</div>
+    </div>
+    <div class="barra-wrap"><div class="barra-label">Nivel de viabilidad</div><div class="barra-bg"><div class="barra-fill" id="barra" style="width:0%"></div></div></div>
+    <div class="verdict" id="verdict" style="display:none"></div>
+    <div class="reco-box" id="reco" style="display:none"></div>
+  </div>
+
+  <div class="section" style="margin-top:24px">
+    <div class="section-label">Notas y próximos pasos</div>
+    <div class="field-group single"><div><label>¿Qué necesitarías para tomar la decisión final?</label><textarea id="notas" placeholder="Escribe aquí tus observaciones, dudas o próximas acciones..."></textarea></div></div>
+  </div>
+
+  <div class="download-bar">
+    <span class="download-hint">PDF con evaluación completa y recomendación</span>
+    <button class="btn-pdf" id="btn-pdf" onclick="generarPDF()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+      Descargar reporte PDF
+    </button>
+  </div>
+  <div class="progress-bar-wrap" id="progress-wrap">
+    <span id="progress-label">Generando reporte...</span>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  </div>
+
+  <div class="footer">
+    <div class="brand">Taller Innovación Ambidiestra · Lima, Perú</div>
+    <div class="logo">Herramienta 1 · Matriz ROI</div>
+  </div>
+</div>
+
+<script>
+const scores = {1:0,2:0,3:0,4:0,5:0,6:0};
+const criterios = [
+  {label:'Impacto en ingresos',      desc:'Genera ingresos nuevos o ahorro significativo'},
+  {label:'Facilidad de implementacion', desc:'Ejecutable con recursos actuales'},
+  {label:'Aceptacion del equipo',    desc:'Adopcion sin resistencia'},
+  {label:'Ventaja competitiva',      desc:'Diferenciacion clara en el mercado'},
+  {label:'Velocidad de retorno',     desc:'Resultados concretos en corto plazo'},
+  {label:'Alineacion con el negocio',desc:'Refuerza lo que ya se hace bien'},
+];
+
+function setStar(crit,val){
+  scores[crit]=val;
+  document.getElementById('stars-'+crit).querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('active',i<val));
+  calcular();
+}
+
+function calcular(){
+  const total=Object.values(scores).reduce((a,b)=>a+b,0);
+  const pct=Math.round((total/24)*100);
+  document.getElementById('score-num').textContent=total>0?total:'–';
+  document.getElementById('barra').style.width=total>0?pct+'%':'0%';
+  document.getElementById('empresa-display').textContent=document.getElementById('empresa').value||'Tu empresa';
+  const verdict=document.getElementById('verdict'), reco=document.getElementById('reco');
+  if(!total){verdict.style.display='none';reco.style.display='none';return;}
+  verdict.style.display='block';reco.style.display='block';
+  if(total>=18){verdict.className='verdict high';verdict.textContent='✅ Alta viabilidad — Adelante con confianza';reco.textContent='Esta iniciativa tiene sólido potencial de retorno. Diseña un plan de implementación en los próximos 30 días y define métricas de éxito claras.';}
+  else if(total>=12){verdict.className='verdict mid-v';verdict.textContent='⚠️ Viabilidad media — Ajusta antes de avanzar';reco.textContent='La iniciativa tiene potencial pero hay criterios débiles. Identifica cuáles puntúan bajo y trabaja en fortalecer esos puntos antes de comprometer recursos significativos.';}
+  else{verdict.className='verdict low';verdict.textContent='🔴 Baja viabilidad — Replantear o pausar';reco.textContent='Los factores actuales no favorecen esta iniciativa. Considera una versión más pequeña o diferente que sea más viable.';}
+}
+
+const tick=()=>new Promise(r=>setTimeout(r,0));
+
+async function generarPDF(){
+  const btn=document.getElementById('btn-pdf');
+  const progressWrap=document.getElementById('progress-wrap');
+  const pfill=document.getElementById('progress-fill');
+  const plbl=document.getElementById('progress-label');
+  btn.disabled=true; btn.textContent='Generando...';
+  progressWrap.classList.add('visible');
+  const prog=(p,t)=>{pfill.style.width=p+'%';plbl.textContent=t;};
+
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const PW=210,PH=297,ML=16,MR=16,CW=178;
+    const fc=(r,g,b)=>doc.setFillColor(r,g,b);
+    const tc=(r,g,b)=>doc.setTextColor(r,g,b);
+    const dc=(r,g,b)=>doc.setDrawColor(r,g,b);
+    const frect=(x,y,w,h,rx=0)=>rx>0?doc.roundedRect(x,y,w,h,rx,rx,'F'):doc.rect(x,y,w,h,'F');
+    const ln=(x1,y1,x2,y2)=>doc.line(x1,y1,x2,y2);
+    const txt=(s,x,y,o)=>doc.text(String(s||''),x,y,o||{});
+    const safe=s=>String(s||'').trim()||'–';
+    const empresa=safe(document.getElementById('empresa').value);
+    const sector=safe(document.getElementById('sector').value);
+    const iniciativa=safe(document.getElementById('iniciativa').value);
+    const inversion=safe(document.getElementById('inversion').value);
+    const tiempo=safe(document.getElementById('tiempo').value);
+    const notas=safe(document.getElementById('notas').value);
+    const total=Object.values(scores).reduce((a,b)=>a+b,0);
+    const pct=Math.round((total/24)*100);
+    const fecha=new Date().toLocaleDateString('es-PE',{day:'2-digit',month:'long',year:'numeric'});
+    const verdictTxt=total>=18?'Alta viabilidad — Adelante con confianza':total>=12?'Viabilidad media — Ajusta antes de avanzar':total>0?'Baja viabilidad — Replantear o pausar':'Sin evaluar';
+    const verdictColor=total>=18?[42,102,68]:total>=12?[168,92,18]:[80,78,74];
+    const recoTxt=total>=18?'Esta iniciativa tiene solido potencial de retorno. Disenha un plan de implementacion en los proximos 30 dias y define metricas de exito claras. Considera asignar un responsable interno y un presupuesto definido.':total>=12?'La iniciativa tiene potencial pero hay criterios debiles. Identifica cuales puntuan bajo y trabajalos antes de comprometer recursos significativos. Considera un piloto pequeño primero.':total>0?'Los factores actuales no favorecen esta iniciativa. Considera una version mas pequenia o diferente que sea mas viable, o prioriza otra oportunidad con mayor potencial.':'Completa los criterios para obtener una recomendacion.';
+
+    prog(10,'Construyendo portada...'); await tick();
+
+    // Header oscuro
+    fc(26,26,24); frect(0,0,PW,48);
+    fc(200,80,42); frect(ML,48,20,1.5);
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); tc(200,80,42);
+    txt('TALLER INNOVACION AMBIDIESTRA  ·  HERRAMIENTA 1 DE 4',ML,13);
+    doc.setFontSize(24); doc.setFont('helvetica','bold'); tc(255,255,255);
+    txt('Matriz ROI Rapido',ML,29);
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); tc(170,165,158);
+    txt(empresa+'   ·   '+fecha,ML,40);
+
+    // Chips metadata
+    const chips=[['EMPRESA',empresa],['SECTOR',sector],['INVERSION',inversion+' S/.'],['TIEMPO',tiempo]];
+    chips.forEach((c,i)=>{
+      const cx=ML+i*46;
+      doc.setFontSize(6.5); doc.setFont('helvetica','bold'); tc(120,115,108);
+      txt(c[0],cx,58);
+      doc.setFontSize(8.5); doc.setFont('helvetica','bold'); tc(26,26,24);
+      txt(c[1],cx,64);
+    });
+    doc.setLineWidth(0.25); dc(212,207,196); ln(ML,68,PW-MR,68);
+
+    prog(25,'Generando iniciativa...'); await tick();
+
+    // Bloque iniciativa
+    let y=74;
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); tc(200,80,42);
+    txt('LA INICIATIVA',ML,y);
+    fc(200,80,42); frect(ML,y+1.5,14,0.8);
+    y+=7;
+    fc(245,242,238); frect(ML,y,CW,20,3);
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); tc(26,26,24);
+    const iLines=doc.splitTextToSize(iniciativa,CW-10);
+    doc.text(iLines.slice(0,2),ML+5,y+7);
+    y+=26;
+
+    prog(40,'Dibujando criterios...'); await tick();
+
+    // Criterios — grilla 2 columnas
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); tc(200,80,42);
+    txt('EVALUACION POR CRITERIO',ML,y);
+    fc(200,80,42); frect(ML,y+1.5,26,0.8);
+    y+=8;
+
+    const cW=(CW-8)/2;
+    criterios.forEach((c,i)=>{
+      const cx=ML+(i%2)*(cW+8);
+      const cy=y+Math.floor(i/2)*18;
+      const sc=scores[i+1];
+      // Fondo
+      fc(sc>0?248:245,sc>0?245:242,sc>0?242:238);
+      frect(cx,cy,cW,14,2);
+      // Nombre
+      doc.setFontSize(8); doc.setFont('helvetica','bold'); tc(26,26,24);
+      txt(c.label,cx+4,cy+5.5);
+      // Desc
+      doc.setFontSize(7); doc.setFont('helvetica','normal'); tc(107,104,96);
+      txt(c.desc,cx+4,cy+10.5);
+      // Barras de puntos
+      for(let p=1;p<=4;p++){
+        if(p<=sc){fc(200,80,42);}else{fc(210,207,200);}
+        frect(cx+cW-4-(4-p)*7,cy+4,5,6,1);
+      }
+      // Número
+      doc.setFontSize(9); doc.setFont('helvetica','bold');
+      if(sc>0)tc(200,80,42); else tc(180,175,168);
+      txt(sc>0?sc+'/4':'–',cx+cW-3,cy+12,{align:'right'});
+    });
+    y+=3*18+6;
+
+    prog(58,'Añadiendo resultado...'); await tick();
+
+    // Bloque resultado oscuro
+    const rH=52;
+    fc(26,26,24); frect(ML,y,CW,rH,4);
+    // Score grande
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); tc(150,145,138);
+    txt('RESULTADO DE LA EVALUACION',ML+5,y+8);
+    doc.setFontSize(32); doc.setFont('helvetica','bold'); tc(255,255,255);
+    txt(String(total),ML+5,y+24);
+    doc.setFontSize(10); doc.setFont('helvetica','normal'); tc(150,145,138);
+    txt('/ 24 puntos',ML+5+14,y+24);
+    // Barra
+    const barW=CW/2-20;
+    fc(60,58,54); frect(ML+5,y+27,barW,3,1.5);
+    if(total>0){fc(200,80,42); frect(ML+5,y+27,Math.max(barW*(total/24),1),3,1.5);}
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); tc(150,145,138);
+    txt(pct+'% de viabilidad',ML+5,y+34);
+    // Divisor vertical
+    doc.setLineWidth(0.25); dc(55,52,46); ln(ML+CW/2,y+6,ML+CW/2,y+rH-6);
+    // Veredicto
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); tc(150,145,138);
+    txt('VEREDICTO',ML+CW/2+5,y+8);
+    fc(...verdictColor); frect(ML+CW/2+5,y+11,CW/2-10,8,2);
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); tc(255,255,255);
+    txt(verdictTxt,ML+CW/2+9,y+16);
+    // Recomendacion
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); tc(180,175,168);
+    const rLines=doc.splitTextToSize(recoTxt,CW/2-10);
+    doc.text(rLines.slice(0,3),ML+CW/2+5,y+24);
+    y+=rH+10;
+
+    prog(72,'Añadiendo notas...'); await tick();
+
+    // Notas
+    if(notas&&notas!=='–'){
+      doc.setFontSize(7.5); doc.setFont('helvetica','bold'); tc(200,80,42);
+      txt('NOTAS Y PROXIMOS PASOS',ML,y);
+      fc(200,80,42); frect(ML,y+1.5,22,0.8);
+      y+=7;
+      fc(245,242,238); frect(ML,y,CW,20,3);
+      doc.setFontSize(8.5); doc.setFont('helvetica','normal'); tc(26,26,24);
+      const nLines=doc.splitTextToSize(notas,CW-10);
+      doc.text(nLines.slice(0,2),ML+5,y+7);
+      y+=26;
+    }
+
+    // Footer
+    const fY=PH-12;
+    doc.setLineWidth(0.25); dc(212,207,196); ln(ML,fY,PW-MR,fY);
+    doc.setFontSize(6.5); doc.setFont('helvetica','normal'); tc(170,165,158);
+    txt('Taller Innovacion Ambidiestra  ·  Lima, Peru',ML,fY+5);
+    txt('Herramienta 1  ·  Matriz ROI Rapido',PW-MR,fY+5,{align:'right'});
+
+    prog(95,'Guardando PDF...'); await tick();
+    doc.save('roi-'+(empresa.replace(/[^a-z0-9]/gi,'-').toLowerCase())+'.pdf');
+    prog(100,'¡Listo!');
+    setTimeout(()=>{progressWrap.classList.remove('visible');pfill.style.width='0%';},2500);
+  }catch(e){
+    console.error(e); alert('Error al generar PDF: '+e.message);
+    progressWrap.classList.remove('visible');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg> Descargar reporte PDF';
+  }
+}
+</script>
+</body>
+</html>

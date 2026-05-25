@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Model Canvas · Taller Innovación Ambidiestra</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #1a1a18; --paper: #f7f4ee; --accent: #c8502a; --accent-light: #f0ddd5;
+    --mid: #6b6860; --line: #d4cfc4; --white: #ffffff;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; padding: 40px 24px 60px; }
+  .page { max-width: 1100px; margin: 0 auto; }
+  .header { border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 32px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); font-weight: 500; margin-bottom: 8px; }
+  h1 { font-family: 'DM Serif Display', serif; font-size: 38px; line-height: 1.1; color: var(--ink); }
+  .subtitle { font-size: 14px; color: var(--mid); margin-top: 10px; line-height: 1.6; }
+  .meta { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .meta span { font-size: 12px; color: var(--mid); border: 1px solid var(--line); padding: 4px 12px; border-radius: 100px; }
+  .empresa-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  label { display: block; font-size: 12px; color: var(--mid); margin-bottom: 5px; font-weight: 500; }
+  input[type="text"] { width: 100%; background: var(--white); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 10px 12px; outline: none; transition: border-color .2s; }
+  input:focus { border-color: var(--accent); }
+  .canvas-wrap { background: var(--white); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+  .canvas-header { background: var(--ink); color: var(--white); text-align: center; padding: 12px 16px; font-family: 'DM Serif Display', serif; font-size: 15px; letter-spacing: 0.04em; }
+  .canvas-header span { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 400; opacity: .55; margin-left: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .canvas-grid { display: grid; grid-template-columns: repeat(5,1fr); grid-template-rows: auto auto auto; border-top: 1px solid var(--line); }
+  .cell { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 14px 12px; display: flex; flex-direction: column; min-height: 180px; }
+  .cell-socios { grid-column:1; grid-row:1/3; min-height:360px; background:#fdfcf9; }
+  .cell-actividades { grid-column:2; grid-row:1; background:#fdfcf9; }
+  .cell-propuesta { grid-column:3; grid-row:1/3; min-height:360px; background:#fefaf8; border-left:2px solid var(--accent)!important; border-right:2px solid var(--accent)!important; }
+  .cell-relaciones { grid-column:4; grid-row:1; background:#fdfcf9; }
+  .cell-segmentos { grid-column:5; grid-row:1/3; min-height:360px; background:#fdfcf9; border-right:none; }
+  .cell-recursos { grid-column:2; grid-row:2; background:#fdfcf9; }
+  .cell-canales { grid-column:4; grid-row:2; background:#fdfcf9; }
+  .cell-costes { grid-column:1/4; grid-row:3; border-right:1px solid var(--line); background:#faf8f4; }
+  .cell-ingresos { grid-column:4/6; grid-row:3; border-right:none; background:#faf8f4; }
+  .cell-zone { font-size:9px; letter-spacing:0.15em; text-transform:uppercase; font-weight:500; color:var(--accent); opacity:.7; margin-bottom:4px; }
+  .cell-title { font-family:'DM Serif Display',serif; font-size:15px; color:var(--ink); margin-bottom:2px; line-height:1.2; }
+  .cell-guide { font-size:11px; color:var(--mid); line-height:1.5; margin-bottom:10px; font-style:italic; }
+  .notes-area { flex:1; display:flex; flex-direction:column; gap:6px; }
+  .note-item { display:flex; align-items:flex-start; gap:6px; }
+  .note-bullet { width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0; margin-top:6px; opacity:.6; }
+  .note-input { flex:1; border:none; background:transparent; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink); resize:none; outline:none; line-height:1.5; padding:0; min-height:20px; overflow:hidden; }
+  .note-input::placeholder { color:var(--line); font-style:italic; font-size:12px; }
+  .note-input:focus { background:var(--paper); border-radius:2px; padding:1px 3px; margin:-1px -3px; }
+  .add-note-btn { align-self:flex-start; border:1px dashed var(--line); background:none; color:var(--mid); border-radius:3px; padding:3px 10px; font-family:'DM Sans',sans-serif; font-size:11px; cursor:pointer; margin-top:4px; transition:all .15s; }
+  .add-note-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .leyenda { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; padding:12px 16px; background:var(--white); border:1px solid var(--line); border-radius:8px; }
+  .leyenda-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--mid); }
+  .leyenda-dot { width:8px; height:8px; border-radius:50%; }
+  .reflexion-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .reflexion-grid textarea { width:100%; background:var(--paper); border:1px solid var(--line); border-radius:4px; color:var(--ink); font-family:'DM Sans',sans-serif; font-size:13px; padding:10px 12px; outline:none; resize:vertical; min-height:60px; transition:border-color .2s; }
+  .reflexion-grid textarea:focus { border-color:var(--accent); }
+  .download-bar { display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:24px; }
+  .download-hint { font-size:12px; color:var(--mid); }
+  .btn-pdf { display:inline-flex; align-items:center; gap:8px; background:var(--ink); color:white; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; padding:12px 24px; cursor:pointer; transition:all .2s; }
+  .btn-pdf:hover { background:#2e2b25; transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,0,0,.18); }
+  .btn-pdf:disabled { background:#aaa; cursor:not-allowed; transform:none; box-shadow:none; }
+  .progress-bar-wrap { display:none; align-items:center; gap:12px; margin-top:10px; font-size:12px; color:var(--mid); }
+  .progress-bar-wrap.visible { display:flex; }
+  .progress-bar-track { flex:1; height:3px; background:var(--line); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--accent); border-radius:2px; width:0%; transition:width .3s; }
+  .footer { margin-top:40px; padding-top:16px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+  .footer .brand { font-size:11px; color:var(--mid); font-style:italic; }
+  .footer .logo { font-family:'DM Serif Display',serif; font-size:13px; color:var(--accent); }
+  @media (max-width:700px) { .empresa-grid { grid-template-columns:1fr; } .canvas-grid { display:flex; flex-direction:column; } .cell { min-height:140px; border-right:none!important; } .reflexion-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="eyebrow">Herramienta 5 de 5 · Taller Innovación Ambidiestra</div>
+    <h1>Business Model Canvas</h1>
+    <p class="subtitle">Describe en un solo lienzo cómo tu empresa crea, entrega y captura valor.</p>
+    <div class="meta"><span>🗺 9 bloques · Modelo de Osterwalder</span><span>⏱ 20–30 min para completar</span><span>✏️ Editable directamente</span></div>
+  </div>
+
+  <div class="empresa-grid">
+    <div><label>Empresa</label><input type="text" id="empresa" placeholder="Nombre de la empresa"></div>
+    <div><label>Sector / Rubro</label><input type="text" id="sector" placeholder="Ej. Distribución de alimentos"></div>
+    <div><label>Fecha</label><input type="text" id="fecha-doc" placeholder="Ej. Abril 2025"></div>
+  </div>
+
+  <div class="leyenda">
+    <div class="leyenda-item"><div class="leyenda-dot" style="background:#8b6f52"></div>Infraestructura</div>
+    <div class="leyenda-item"><div class="leyenda-dot" style="background:#c8502a"></div>Oferta</div>
+    <div class="leyenda-item"><div class="leyenda-dot" style="background:#2a6644"></div>Clientes</div>
+    <div class="leyenda-item"><div class="leyenda-dot" style="background:#1e62c8"></div>Finanzas</div>
+    <div style="margin-left:auto;font-size:11px;color:var(--mid);font-style:italic">Haz clic en cualquier campo para editar</div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div class="canvas-header">Business Model Canvas <span>Modelo de Osterwalder &amp; Pigneur</span></div>
+    <div class="canvas-grid">
+      <div class="cell cell-socios"><div class="cell-zone" style="color:#8b6f52">Infraestructura</div><div class="cell-title">Socios Clave</div><div class="cell-guide">¿Con quiénes trabajamos para que el modelo funcione?</div><div class="notes-area" id="notas-socios"><div class="note-item"><div class="note-bullet" style="background:#8b6f52"></div><textarea class="note-input" placeholder="Ej. Proveedor principal de materia prima" rows="1" oninput="autoResize(this)"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#8b6f52"></div><textarea class="note-input" placeholder="Ej. Empresa de logística y distribución" rows="1" oninput="autoResize(this)"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#8b6f52"></div><textarea class="note-input" placeholder="Ej. Alianza con otra empresa del sector" rows="1" oninput="autoResize(this)"></textarea></div></div><button class="add-note-btn" onclick="addNota('notas-socios','#8b6f52')">+ Añadir</button></div>
+      <div class="cell cell-actividades"><div class="cell-zone" style="color:#8b6f52">Infraestructura</div><div class="cell-title">Actividades Clave</div><div class="cell-guide">¿Qué hacemos mejor y no podemos dejar de hacer?</div><div class="notes-area" id="notas-actividades"><div class="note-item"><div class="note-bullet" style="background:#8b6f52"></div><textarea class="note-input" placeholder="Ej. Producción y control de calidad" rows="1" oninput="autoResize(this)"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#8b6f52"></div><textarea class="note-input" placeholder="Ej. Gestión de pedidos y despacho" rows="1" oninput="autoResize(this)"></textarea></div></div><button class="add-note-btn" onclick="addNota('notas-actividades','#8b6f52')">+ Añadir</button></div>
+      <div class="cell cell-propuesta"><div class="cell-zone" style="color:var(--accent)">Oferta</div><div class="cell-title">Propuesta de Valor</div><div class="cell-guide">¿Qué problema resolvemos? ¿Por qué nos eligen?</div><div class="notes-area" id="notas-propuesta"><div class="note-item"><div class="note-bullet"></div><textarea class="note-input" placeholder="Ej. Entrega en 24h garantizada" rows="1" oninput="autoResize(this)"></textarea></div><div class="note-item"><div class="note-bullet"></div><textarea class="note-input" placeholder="Ej. Precio competitivo con calidad premium" rows="1" oninput="autoResize(this)"></textarea></div><div class="note-item"><div class="note-bullet"></div><textarea class="note-input" placeholder="Ej. Atención personalizada y servicio postventa" rows="1" oninput="autoResize(this)"></textarea></div></div><button class="add-note-btn" onclick="addNota('notas-propuesta','var(--accent)')">+ Añadir</button></div>
+      <div class="cell cell-relaciones"><div class="cell-zone" style="color:#2a6644">Clientes</div><div class="cell-title">Relaciones con Clientes</div><div class="cell-guide">¿Cómo nos relacionamos y fidelizamos?</div><div class="notes-area" id="notas-relaciones"><div class="note-item"><div class="note-bullet" style="background:#2a6644"></div><textarea class="note-input" placeholder="Ej. Atención personalizada por ejecutivo" rows="1" oninput="autoResize(this)"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#2a6644"></div><textarea class="note-input" placeholder="Ej. Programa de fidelización / descuentos" rows="1" oninput="autoResize(this)"></textarea></div></div><button class="add-note-btn" onclick="addNota('notas-relaciones','#2a6644')">+ Añadir</button></div>
+      <div class="cell cell-segmentos"><div class="cell-zone" style="color:#2a6644">Clientes</div><div class="cell-title">Segmentos de Clientes</div><div class="cell-guide">¿Para quién creamos valor?</div><div class="notes-area" id="notas-segmentos"><div class="note-item"><div class="note-bullet" style="background:#2a6644"></div><textarea class="note-input" placeholder="Ej. Mayoristas del sector retail" rows="1" oninput="autoResize(this)"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#2a6644"></div><textarea class="note-input" placeholder="Ej. Pequeñas empresas familiares" rows="1" oninput="autoResize(this)"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#2a6644"></div><textarea class="note-input" placeholder="Ej. Clientes corporativos con contratos anuales" rows="1" oninput="autoResize(this)"></textarea></div></div><button class="add-note-btn" onclick="addNota('notas-segmentos','#2a6644')">+ Añadir</button></div>
+      <div class="cell cell-recursos"><div class="cell-zone" style="color:#8b6f52">Infraestructura</div><div class="cell-title">Recursos Clave</div><div class="cell-guide">¿Qué activos son imprescindibles para operar?</div><div class="notes-area" id="notas-recursos"><div class="note-item"><div class="note-bullet" style="background:#8b6f52"></div><textarea class="note-input" placeholder="Ej. Equipo de ventas con experiencia" rows="1" oninput="autoResize(this)"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#8b6f52"></div><textarea class="note-input" placeholder="Ej. Almacén propio y flota de reparto" rows="1" oninput="autoResize(this)"></textarea></div></div><button class="add-note-btn" onclick="addNota('notas-recursos','#8b6f52')">+ Añadir</button></div>
+      <div class="cell cell-canales"><div class="cell-zone" style="color:#2a6644">Clientes</div><div class="cell-title">Canales</div><div class="cell-guide">¿Cómo llegamos a nuestros clientes?</div><div class="notes-area" id="notas-canales"><div class="note-item"><div class="note-bullet" style="background:#2a6644"></div><textarea class="note-input" placeholder="Ej. Fuerza de ventas directa" rows="1" oninput="autoResize(this)"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#2a6644"></div><textarea class="note-input" placeholder="Ej. WhatsApp Business y redes sociales" rows="1" oninput="autoResize(this)"></textarea></div></div><button class="add-note-btn" onclick="addNota('notas-canales','#2a6644')">+ Añadir</button></div>
+      <div class="cell cell-costes"><div class="cell-zone" style="color:#1e62c8">Finanzas</div><div class="cell-title">Estructura de Costes</div><div class="cell-guide">¿Cuáles son los costes más importantes para operar?</div><div class="notes-area" style="flex-direction:row;flex-wrap:wrap;gap:6px 20px" id="notas-costes"><div class="note-item"><div class="note-bullet" style="background:#1e62c8"></div><textarea class="note-input" placeholder="Ej. Salarios y planilla" rows="1" oninput="autoResize(this)" style="min-width:160px"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#1e62c8"></div><textarea class="note-input" placeholder="Ej. Costo de materia prima / mercadería" rows="1" oninput="autoResize(this)" style="min-width:160px"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#1e62c8"></div><textarea class="note-input" placeholder="Ej. Logística y distribución" rows="1" oninput="autoResize(this)" style="min-width:160px"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#1e62c8"></div><textarea class="note-input" placeholder="Ej. Alquiler de local / almacén" rows="1" oninput="autoResize(this)" style="min-width:160px"></textarea></div></div><button class="add-note-btn" onclick="addNota('notas-costes','#1e62c8')">+ Añadir</button></div>
+      <div class="cell cell-ingresos"><div class="cell-zone" style="color:#1e62c8">Finanzas</div><div class="cell-title">Fuentes de Ingresos</div><div class="cell-guide">¿Por qué valor están dispuestos a pagar nuestros clientes?</div><div class="notes-area" style="flex-direction:row;flex-wrap:wrap;gap:6px 20px" id="notas-ingresos"><div class="note-item"><div class="note-bullet" style="background:#1e62c8"></div><textarea class="note-input" placeholder="Ej. Venta directa de productos" rows="1" oninput="autoResize(this)" style="min-width:140px"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#1e62c8"></div><textarea class="note-input" placeholder="Ej. Contratos de servicio recurrente" rows="1" oninput="autoResize(this)" style="min-width:140px"></textarea></div><div class="note-item"><div class="note-bullet" style="background:#1e62c8"></div><textarea class="note-input" placeholder="Ej. Comisiones o márgenes de distribución" rows="1" oninput="autoResize(this)" style="min-width:140px"></textarea></div></div><button class="add-note-btn" onclick="addNota('notas-ingresos','#1e62c8')">+ Añadir</button></div>
+    </div>
+  </div>
+
+  <!-- Reflexión -->
+  <div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:20px 24px;margin-bottom:20px;">
+    <div style="font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--mid);margin-bottom:14px;border-left:3px solid var(--accent);padding-left:10px;">Reflexión final</div>
+    <div class="reflexion-grid">
+      <div><label>¿Cuál es tu bloque más sólido hoy?</label><textarea id="ref1" placeholder="El bloque donde tienes más ventaja competitiva..."></textarea></div>
+      <div><label>¿Cuál es tu bloque más débil o sin definir?</label><textarea id="ref2" placeholder="El bloque que más necesita trabajo urgente..."></textarea></div>
+      <div><label>¿Dónde ves la mayor oportunidad de innovar?</label><textarea id="ref3" placeholder="Una palanca que podría cambiar el modelo..."></textarea></div>
+      <div><label>¿Qué cambiarías primero en los próximos 90 días?</label><textarea id="ref4" placeholder="Una acción concreta y con responsable claro..."></textarea></div>
+    </div>
+  </div>
+
+  <div class="download-bar">
+    <span class="download-hint">PDF con los 9 bloques, contenido y reflexiones</span>
+    <button class="btn-pdf" id="btn-pdf" onclick="generarPDF()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+      Descargar reporte PDF
+    </button>
+  </div>
+  <div class="progress-bar-wrap" id="progress-wrap">
+    <span id="progress-label">Generando reporte...</span>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  </div>
+
+  <div class="footer">
+    <div class="brand">Taller Innovación Ambidiestra · Lima, Perú</div>
+    <div class="logo">Herramienta 5 · Business Model Canvas</div>
+  </div>
+</div>
+
+<script>
+function autoResize(el){ el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
+function addNota(containerId,color){
+  const container=document.getElementById(containerId);
+  const item=document.createElement('div'); item.className='note-item';
+  const isFinanzas=containerId==='notas-costes'||containerId==='notas-ingresos';
+  item.innerHTML=`<div class="note-bullet" style="background:${color}"></div><textarea class="note-input" rows="1" placeholder="Añade un punto..." oninput="autoResize(this)"${isFinanzas?' style="min-width:140px"':''}></textarea>`;
+  container.appendChild(item);
+  item.querySelector('textarea').focus();
+}
+document.querySelectorAll('.note-input').forEach(el=>autoResize(el));
+
+// Helper: leer todos los ítems de un bloque
+function getNotas(id){
+  return [...document.querySelectorAll(`#${id} .note-input`)].map(el=>el.value.trim()).filter(Boolean);
+}
+
+const BLOQUES=[
+  {id:'notas-socios',     name:'Socios Clave',           zone:'Infraestructura', color:[139,111,82]},
+  {id:'notas-actividades',name:'Actividades Clave',       zone:'Infraestructura', color:[139,111,82]},
+  {id:'notas-propuesta',  name:'Propuesta de Valor',      zone:'Oferta',          color:[200,80,42]},
+  {id:'notas-relaciones', name:'Relaciones con Clientes', zone:'Clientes',        color:[42,102,68]},
+  {id:'notas-segmentos',  name:'Segmentos de Clientes',   zone:'Clientes',        color:[42,102,68]},
+  {id:'notas-recursos',   name:'Recursos Clave',          zone:'Infraestructura', color:[139,111,82]},
+  {id:'notas-canales',    name:'Canales',                 zone:'Clientes',        color:[42,102,68]},
+  {id:'notas-costes',     name:'Estructura de Costes',    zone:'Finanzas',        color:[30,98,200]},
+  {id:'notas-ingresos',   name:'Fuentes de Ingresos',     zone:'Finanzas',        color:[30,98,200]},
+];
+
+const tick=()=>new Promise(r=>setTimeout(r,0));
+
+async function generarPDF(){
+  const btn=document.getElementById('btn-pdf');
+  const progressWrap=document.getElementById('progress-wrap');
+  const pfill=document.getElementById('progress-fill');
+  const plbl=document.getElementById('progress-label');
+  btn.disabled=true; btn.textContent='Generando...';
+  progressWrap.classList.add('visible');
+  const prog=(p,t)=>{pfill.style.width=p+'%';plbl.textContent=t;};
+
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    // A4 landscape: 297 × 210
+    const PW=297,PH=210,ML=14,MR=14,CW=297-14-14;
+    const fc=(r,g,b)=>doc.setFillColor(r,g,b);
+    const tc=(r,g,b)=>doc.setTextColor(r,g,b);
+    const dc=(r,g,b)=>doc.setDrawColor(r,g,b);
+    const frect=(x,y,w,h,rx=0)=>rx>0?doc.roundedRect(x,y,w,h,rx,rx,'F'):doc.rect(x,y,w,h,'F');
+    const ln=(x1,y1,x2,y2)=>doc.line(x1,y1,x2,y2);
+    const txt=(s,x,y,o)=>doc.text(String(s||''),x,y,o||{});
+    const safe=s=>String(s||'').trim()||'–';
+    const wrapT=(s,w)=>doc.splitTextToSize(String(s||''),w);
+
+    const empresa=safe(document.getElementById('empresa').value);
+    const sector=safe(document.getElementById('sector').value);
+    const fechaDoc=safe(document.getElementById('fecha-doc').value);
+    const fecha=new Date().toLocaleDateString('es-PE',{day:'2-digit',month:'long',year:'numeric'});
+
+    prog(10,'Construyendo portada...'); await tick();
+
+    /* ── PÁGINA 1 — Canvas completo ── */
+    // Header band
+    fc(26,26,24); frect(0,0,PW,22);
+    fc(200,80,42); frect(ML,22,16,1.2);
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); tc(200,80,42);
+    txt('TALLER INNOVACION AMBIDIESTRA  ·  HERRAMIENTA 5 DE 5',ML,8);
+    doc.setFontSize(18); doc.setFont('helvetica','bold'); tc(255,255,255);
+    txt('Business Model Canvas',ML,17);
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); tc(160,155,148);
+    txt(empresa+'  ·  '+sector+'  ·  '+fecha,ML+110,13);
+
+    let canvasTop=26;
+    const canvasH=PH-canvasTop-16;
+
+    // Layout del canvas: 5 columnas × 3 filas
+    // Columnas: socios | act+rec | propuesta | rel+can | segmentos | (costes y ingresos en fila 3 toda la anchura)
+    // Anchuras relativas
+    const col=[0.18,0.16,0.20,0.16,0.18]; // 5 columnas (suma ~0.88, las 2/3 de finanzas completan)
+    const colW=col.map(c=>Math.round(CW*c));
+    const row1H=Math.round(canvasH*0.38);
+    const row2H=Math.round(canvasH*0.38);
+    const row3H=canvasH-row1H-row2H;
+
+    // Colores de zona
+    const zoneColors={Infraestructura:[248,245,240],Oferta:[255,250,248],Clientes:[248,252,248],Finanzas:[246,244,255]};
+    const zoneBorder={Infraestructura:[200,190,175],Oferta:[200,80,42],Clientes:[42,102,68],Finanzas:[30,98,200]};
+
+    function drawCell(x,y,w,h,bloque,notas){
+      const zc=zoneColors[bloque.zone]||[248,245,240];
+      const zb=zoneBorder[bloque.zone]||[200,190,175];
+      fc(...zc); frect(x,y,w,h,0);
+      doc.setLineWidth(0.3); dc(...zb); doc.rect(x,y,w,h,'S');
+      // Acento top
+      fc(...bloque.color); frect(x,y,w,1.5,0);
+      // Zone
+      doc.setFontSize(5.5); doc.setFont('helvetica','bold'); tc(...bloque.color);
+      txt(bloque.zone.toUpperCase(),x+3,y+6);
+      // Nombre
+      doc.setFontSize(8); doc.setFont('helvetica','bold'); tc(26,26,24);
+      txt(bloque.name,x+3,y+11);
+      // Divisor
+      doc.setLineWidth(0.2); dc(215,210,202); ln(x+2,y+13,x+w-2,y+13);
+      // Notas
+      let ny=y+17;
+      notas.slice(0,5).forEach(n=>{
+        if(ny>y+h-4) return;
+        fc(...bloque.color); doc.ellipse(x+5,ny-0.5,1,1,'F');
+        doc.setFontSize(7); doc.setFont('helvetica','normal'); tc(26,26,24);
+        const lines=wrapT(n,w-12);
+        txt(lines[0]||'',x+8,ny);
+        ny+=5;
+      });
+    }
+
+    let cx=ML;
+    const colPositions=[];
+    colW.forEach(w=>{ colPositions.push(cx); cx+=w; });
+
+    prog(25,'Dibujando bloques del canvas...'); await tick();
+
+    // Fila 1+2: Socios (span 2 filas)
+    drawCell(colPositions[0],canvasTop,colW[0],row1H+row2H,BLOQUES[0],getNotas('notas-socios'));
+    // Fila 1: Actividades
+    drawCell(colPositions[1],canvasTop,colW[1],row1H,BLOQUES[1],getNotas('notas-actividades'));
+    // Fila 1+2: Propuesta (span 2)
+    drawCell(colPositions[2],canvasTop,colW[2],row1H+row2H,BLOQUES[2],getNotas('notas-propuesta'));
+    // Fila 1: Relaciones
+    drawCell(colPositions[3],canvasTop,colW[3],row1H,BLOQUES[3],getNotas('notas-relaciones'));
+    // Fila 1+2: Segmentos (span 2)
+    drawCell(colPositions[4],canvasTop,colW[4],row1H+row2H,BLOQUES[4],getNotas('notas-segmentos'));
+    // Fila 2: Recursos
+    drawCell(colPositions[1],canvasTop+row1H,colW[1],row2H,BLOQUES[5],getNotas('notas-recursos'));
+    // Fila 2: Canales
+    drawCell(colPositions[3],canvasTop+row1H,colW[3],row2H,BLOQUES[6],getNotas('notas-canales'));
+
+    prog(50,'Finanzas...'); await tick();
+
+    // Fila 3: Costes (izquierda, 3 columnas)
+    const costesW=colW[0]+colW[1]+colW[2];
+    drawCell(colPositions[0],canvasTop+row1H+row2H,costesW,row3H,BLOQUES[7],getNotas('notas-costes'));
+    // Fila 3: Ingresos (derecha)
+    const ingresosW=colW[3]+colW[4];
+    drawCell(colPositions[3],canvasTop+row1H+row2H,ingresosW,row3H,BLOQUES[8],getNotas('notas-ingresos'));
+
+    // Footer p1
+    doc.setLineWidth(0.25); dc(212,207,196); ln(ML,PH-8,PW-MR,PH-8);
+    doc.setFontSize(6); doc.setFont('helvetica','normal'); tc(170,165,158);
+    txt('Taller Innovacion Ambidiestra  ·  Lima, Peru',ML,PH-4);
+    txt('Herramienta 5  ·  Business Model Canvas  ·  1 / 2',PW-MR,PH-4,{align:'right'});
+
+    prog(68,'Página 2 — reflexiones...'); await tick();
+
+    /* ── PÁGINA 2 — Reflexiones + detalle ── */
+    doc.addPage();
+    fc(26,26,24); frect(0,0,PW,22);
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); tc(200,80,42); txt('BUSINESS MODEL CANVAS',ML,10);
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); tc(140,135,128); txt(empresa+'  ·  '+fecha,ML,16);
+    doc.setFontSize(6.5); tc(90,86,80); txt('2 / 2',PW-MR,13,{align:'right'});
+
+    let y2=30;
+
+    // Reflexiones
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); tc(200,80,42);
+    txt('REFLEXIONES FINALES',ML,y2);
+    fc(200,80,42); frect(ML,y2+1.5,20,0.8);
+    y2+=8;
+
+    const refs=[
+      {label:'¿Cual es tu bloque mas solido hoy?',id:'ref1'},
+      {label:'¿Cual es tu bloque mas debil o sin definir?',id:'ref2'},
+      {label:'¿Donde ves la mayor oportunidad de innovar?',id:'ref3'},
+      {label:'¿Que cambiarias primero en los proximos 90 dias?',id:'ref4'},
+    ];
+    const rW=(CW-6)/4;
+    refs.forEach((ref,i)=>{
+      const rx=ML+i*(rW+2);
+      const val=safe(document.getElementById(ref.id)?.value);
+      fc(245,242,238); frect(rx,y2,rW,34,2);
+      doc.setLineWidth(0.3); dc(220,215,206); doc.roundedRect(rx,y2,rW,34,2,2,'S');
+      fc(200,80,42); frect(rx,y2,rW,1.5,0);
+      fc(245,242,238); frect(rx,y2,2,3); frect(rx+rW-2,y2,2,3);
+      doc.setFontSize(6.5); doc.setFont('helvetica','bold'); tc(120,115,108);
+      doc.text(wrapT(ref.label,rW-8).slice(0,2),rx+4,y2+7);
+      doc.setLineWidth(0.2); dc(220,215,206); ln(rx+3,y2+13,rx+rW-3,y2+13);
+      doc.setFontSize(8); doc.setFont('helvetica','normal'); tc(26,26,24);
+      doc.text(wrapT(val,rW-8).slice(0,3),rx+4,y2+18);
+    });
+    y2+=42;
+
+    // Resumen de bloques
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); tc(200,80,42);
+    txt('CONTENIDO POR BLOQUE',ML,y2);
+    fc(200,80,42); frect(ML,y2+1.5,22,0.8);
+    y2+=8;
+
+    prog(84,'Detalle de bloques...'); await tick();
+
+    BLOQUES.forEach((b,i)=>{
+      const notas=getNotas(b.id);
+      const rowH=notas.length>0?12:9;
+      fc(i%2===0?245:248,i%2===0?242:245,i%2===0?238:242);
+      frect(ML,y2,CW,rowH,2);
+      // Dot zona
+      fc(...b.color); doc.ellipse(ML+4,y2+rowH/2,1.5,1.5,'F');
+      // Nombre
+      doc.setFontSize(8); doc.setFont('helvetica','bold'); tc(...b.color);
+      txt(b.name,ML+9,y2+5.5);
+      // Badge zona
+      fc(...b.color);
+      const badgeW=b.zone.length*1.5+6;
+      frect(ML+45,y2+2,badgeW,rowH-4,1.5);
+      doc.setFontSize(6); doc.setFont('helvetica','bold'); tc(255,255,255);
+      txt(b.zone,ML+48,y2+rowH/2+1.5);
+      // Notas inline
+      if(notas.length){
+        doc.setFontSize(7.5); doc.setFont('helvetica','normal'); tc(80,76,70);
+        txt(notas.slice(0,3).join('  ·  '),ML+45+badgeW+6,y2+5.5);
+        if(notas.length>1&&rowH>9){
+          doc.setFontSize(7); tc(130,125,118);
+          txt(notas.slice(1,3).join('  ·  '),ML+45+badgeW+6,y2+10);
+        }
+      }else{
+        doc.setFontSize(7.5); doc.setFont('helvetica','italic'); tc(170,165,158);
+        txt('Sin contenido registrado',ML+45+badgeW+6,y2+5.5);
+      }
+      y2+=rowH+3;
+    });
+
+    // Footer p2
+    doc.setLineWidth(0.25); dc(212,207,196); ln(ML,PH-8,PW-MR,PH-8);
+    doc.setFontSize(6); doc.setFont('helvetica','normal'); tc(170,165,158);
+    txt('Taller Innovacion Ambidiestra  ·  Lima, Peru',ML,PH-4);
+    txt('Herramienta 5  ·  Business Model Canvas  ·  2 / 2',PW-MR,PH-4,{align:'right'});
+
+    prog(95,'Guardando PDF...'); await tick();
+    doc.save('bmc-'+(empresa.replace(/[^a-z0-9]/gi,'-').toLowerCase())+'.pdf');
+    prog(100,'¡Listo!');
+    setTimeout(()=>{progressWrap.classList.remove('visible');pfill.style.width='0%';},2500);
+  }catch(e){
+    console.error(e); alert('Error al generar PDF: '+e.message);
+    progressWrap.classList.remove('visible');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg> Descargar reporte PDF';
+  }
+}
+</script>
+</body>
+</html>

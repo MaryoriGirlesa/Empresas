@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoría Tech Express · Taller Innovación Ambidiestra</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f2f0eb; --white: #ffffff; --ink: #1c1c1a; --mid: #72706a; --border: #d8d5ce;
+    --accent: #2d5be3; --accent-light: #e8eefb; --green: #1a7a4a; --green-bg: #e6f5ed;
+    --amber: #b05a00; --amber-bg: #fef0dc; --red: #c42b2b; --red-bg: #fdeaea;
+  }
+  body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; padding: 40px 24px 60px; }
+  .page { max-width: 800px; margin: 0 auto; }
+  .header { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: end; border-bottom: 2px solid var(--ink); padding-bottom: 24px; margin-bottom: 30px; }
+  .eyebrow { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 0.12em; margin-bottom: 8px; }
+  h1 { font-size: 36px; font-weight: 600; line-height: 1.1; }
+  .subtitle { font-size: 13px; color: var(--mid); margin-top: 8px; line-height: 1.6; }
+  .score-header { text-align: center; background: var(--ink); color: white; border-radius: 8px; padding: 16px 24px; min-width: 120px; }
+  .score-header .big { font-size: 40px; font-weight: 600; font-family: 'Space Mono', monospace; line-height: 1; }
+  .score-header .label { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 4px; font-family: 'Space Mono', monospace; }
+  .intro-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  label { display: block; font-size: 11px; color: var(--mid); margin-bottom: 5px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+  input[type="text"], textarea, select { width: 100%; background: var(--white); border: 1px solid var(--border); border-radius: 4px; color: var(--ink); font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 9px 12px; outline: none; transition: border-color .2s; }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  .cat { background: var(--white); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+  .cat-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; cursor: pointer; user-select: none; transition: background .15s; }
+  .cat-header:hover { background: #fafaf8; }
+  .cat-icon { font-size: 20px; flex-shrink: 0; }
+  .cat-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .cat-score { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--accent); font-weight: 700; }
+  .cat-chevron { font-size: 12px; color: var(--mid); transition: transform .2s; }
+  .cat-header.open .cat-chevron { transform: rotate(180deg); }
+  .cat-body { display: none; border-top: 1px solid var(--border); }
+  .cat-body.open { display: block; }
+  .tool-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; padding: 12px 18px; border-bottom: 1px solid #f0ede6; align-items: center; }
+  .tool-row:last-child { border-bottom: none; }
+  .tool-row-header { background: #f8f6f2; }
+  .tool-row-header span { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--mid); letter-spacing: 0.06em; text-transform: uppercase; }
+  .tool-name { font-size: 13px; font-weight: 500; }
+  .tool-sub { font-size: 11px; color: var(--mid); margin-top: 2px; }
+  .uso-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 2px; outline: none; cursor: pointer; background: linear-gradient(to right, var(--accent) var(--val,0%), var(--border) var(--val,0%)); border: none; padding: 0; }
+  .uso-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid white; box-shadow: 0 0 0 1px var(--accent); }
+  .uso-val { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); margin-top: 3px; }
+  .estado { font-size: 12px; padding: 6px 8px; }
+  .oport { display: inline-block; font-size: 10px; padding: 3px 8px; border-radius: 2px; font-weight: 600; letter-spacing: 0.04em; }
+  .op-alta { background: var(--red-bg); color: var(--red); }
+  .op-media { background: var(--amber-bg); color: var(--amber); }
+  .op-baja { background: var(--green-bg); color: var(--green); }
+  .resumen { background: var(--ink); border-radius: 8px; padding: 24px; margin-top: 20px; }
+  .resumen h3 { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.5); margin-bottom: 20px; font-family: 'Space Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+  .resumen-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+  .resumen-card { background: rgba(255,255,255,.07); border-radius: 6px; padding: 14px 12px; text-align: center; }
+  .resumen-card .big-num { font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700; color: white; }
+  .resumen-card .rcard-label { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 4px; }
+  .top-oport { margin-top: 16px; }
+  .top-oport h4 { font-size: 12px; color: rgba(255,255,255,.5); font-family: 'Space Mono', monospace; margin-bottom: 10px; }
+  .oport-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(255,255,255,.06); border-radius: 4px; margin-bottom: 6px; font-size: 13px; color: rgba(255,255,255,.85); }
+  .oport-item .tag { font-size: 10px; background: var(--accent); color: white; padding: 2px 7px; border-radius: 2px; flex-shrink: 0; }
+  .notas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+  .nota-box { background: var(--white); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .nota-box label { margin-bottom: 8px; }
+  .nota-box textarea { min-height: 80px; font-size: 13px; }
+  .download-bar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 24px; }
+  .download-hint { font-size: 12px; color: var(--mid); }
+  .btn-pdf { display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: white; border: none; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 500; padding: 12px 24px; cursor: pointer; transition: all .2s; }
+  .btn-pdf:hover { background: #2e2b25; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+  .btn-pdf:disabled { background: #aaa; cursor: not-allowed; transform: none; box-shadow: none; }
+  .progress-bar-wrap { display: none; align-items: center; gap: 12px; margin-top: 10px; font-size: 12px; color: var(--mid); }
+  .progress-bar-wrap.visible { display: flex; }
+  .progress-bar-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width .3s; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; }
+  .footer span { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--mid); }
+  @media (max-width: 640px) { h1 { font-size: 26px; } .header { grid-template-columns: 1fr; } .intro-grid, .resumen-grid, .notas-grid, .tool-row { grid-template-columns: 1fr; } .tool-row-header { display: none; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="eyebrow">// Herramienta 3 de 4 · Taller Innovación Ambidiestra</div>
+      <h1>Auditoría Tech Express</h1>
+      <p class="subtitle">Descubre qué tecnología ya tienes y cuánto la estás aprovechando realmente. El mayor ROI casi siempre está en lo que ya pagas.</p>
+    </div>
+    <div class="score-header">
+      <div class="big" id="score-total">0%</div>
+      <div class="label">uso promedio</div>
+    </div>
+  </div>
+
+  <div class="intro-grid">
+    <div><label>Empresa</label><input type="text" id="empresa" placeholder="Nombre de la empresa" oninput="updateResumen()"></div>
+    <div><label>Sector</label><input type="text" id="sector" placeholder="Rubro / industria"></div>
+    <div><label>N° de colaboradores</label><input type="text" id="colaboradores" placeholder="Ej. 12 personas"></div>
+  </div>
+
+  <div id="cats-container"></div>
+
+  <div class="resumen" id="resumen">
+    <h3>// resumen de tu stack tecnológico</h3>
+    <div class="resumen-grid">
+      <div class="resumen-card"><div class="big-num" id="r-herramientas">0</div><div class="rcard-label">Herramientas activas</div></div>
+      <div class="resumen-card"><div class="big-num" id="r-uso">0%</div><div class="rcard-label">Uso promedio</div></div>
+      <div class="resumen-card"><div class="big-num" id="r-sub">0</div><div class="rcard-label">Pagando sin usar bien</div></div>
+      <div class="resumen-card"><div class="big-num" id="r-oport">0</div><div class="rcard-label">Oportunidades altas</div></div>
+    </div>
+    <div class="top-oport" id="top-oport">
+      <h4>→ tus principales oportunidades de optimización</h4>
+      <div id="oport-list"><div style="font-size:13px;color:rgba(255,255,255,.4)">Completa los sliders para ver oportunidades</div></div>
+    </div>
+  </div>
+
+  <div class="notas-grid">
+    <div class="nota-box"><label>¿Qué tecnología necesitas pero no tienes?</label><textarea id="nota1" placeholder="Herramientas que te gustaría tener o has considerado comprar..."></textarea></div>
+    <div class="nota-box"><label>¿Qué pagarías hoy sin saber para qué sirve?</label><textarea id="nota2" placeholder="Suscripciones activas que nadie usa o nadie sabe exactamente qué hacen..."></textarea></div>
+    <div class="nota-box"><label>¿Qué proceso tarda más de lo que debería?</label><textarea id="nota3" placeholder="El proceso que más te frustra por lentitud o error humano..."></textarea></div>
+    <div class="nota-box"><label>Próximos 3 pasos concretos</label><textarea id="nota4" placeholder="1. &#10;2. &#10;3."></textarea></div>
+  </div>
+
+  <div class="download-bar">
+    <span class="download-hint">PDF con stack completo, métricas y oportunidades</span>
+    <button class="btn-pdf" id="btn-pdf" onclick="generarPDF()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+      Descargar reporte PDF
+    </button>
+  </div>
+  <div class="progress-bar-wrap" id="progress-wrap">
+    <span id="progress-label">Generando reporte...</span>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  </div>
+
+  <div class="footer">
+    <span>// Taller Innovación Ambidiestra · Lima, Perú</span>
+    <span>Herramienta 3 · Auditoría Tech Express</span>
+  </div>
+</div>
+
+<script>
+const categorias=[
+  {icon:'💬',title:'Comunicacion y colaboracion',tools:[{name:'WhatsApp Business',sub:'Atencion y pedidos de clientes'},{name:'Email corporativo',sub:'Gmail / Outlook / otro'},{name:'Videollamadas',sub:'Zoom / Meet / Teams'},{name:'Chat interno del equipo',sub:'Slack / Teams / WhatsApp grupos'}]},
+  {icon:'📊',title:'Ventas y clientes (CRM)',tools:[{name:'CRM / gestion de clientes',sub:'HubSpot / Zoho / Excel / otro'},{name:'Pipeline de ventas',sub:'¿Tienes un proceso documentado?'},{name:'Facturacion electronica',sub:'Sistema de facturacion SUNAT'},{name:'E-commerce / tienda online',sub:'Shopify / WooCommerce / Mercado Libre'}]},
+  {icon:'⚙️',title:'Operaciones y procesos',tools:[{name:'ERP / sistema de gestion',sub:'SAP / Odoo / sistema propio'},{name:'Inventario y stock',sub:'Software de inventarios'},{name:'Gestion de proyectos',sub:'Trello / Asana / Notion / Excel'},{name:'Automatizacion de procesos',sub:'Zapier / Power Automate / macros'}]},
+  {icon:'📢',title:'Marketing y presencia digital',tools:[{name:'Redes sociales activas',sub:'Instagram / LinkedIn / TikTok / Facebook'},{name:'Publicidad digital pagada',sub:'Meta Ads / Google Ads'},{name:'Email marketing',sub:'Mailchimp / newsletters / campanas'},{name:'Analitica web',sub:'Google Analytics / Search Console'}]},
+  {icon:'🤖',title:'IA y productividad',tools:[{name:'IA para redaccion / contenido',sub:'ChatGPT / Claude / Gemini'},{name:'IA para atencion al cliente',sub:'Chatbots / respuestas automaticas'},{name:'Hojas de calculo avanzadas',sub:'Excel / Google Sheets con formulas'},{name:'Almacenamiento en la nube',sub:'Drive / OneDrive / Dropbox'}]},
+];
+
+const toolData={};
+let toolIdCounter=0;
+
+function buildCats(){
+  const container=document.getElementById('cats-container');
+  categorias.forEach((cat,ci)=>{
+    const catDiv=document.createElement('div'); catDiv.className='cat';
+    catDiv.innerHTML=`
+      <div class="cat-header" id="cat-header-${ci}" onclick="toggleCat(${ci})">
+        <span class="cat-icon">${cat.icon}</span>
+        <span class="cat-title">${cat.title}</span>
+        <span class="cat-score" id="cat-score-${ci}">0%</span>
+        <span class="cat-chevron">▼</span>
+      </div>
+      <div class="cat-body" id="cat-body-${ci}">
+        <div class="tool-row tool-row-header" style="display:grid"><span>Herramienta</span><span>% de uso real</span><span>Estado</span><span>Oportunidad</span></div>
+        ${cat.tools.map(t=>{
+          const tid=`tool-${toolIdCounter++}`;
+          toolData[tid]={uso:0,estado:'activa',name:t.name,cat:cat.title};
+          return `<div class="tool-row" id="row-${tid}">
+            <div><div class="tool-name">${t.name}</div><div class="tool-sub">${t.sub}</div></div>
+            <div><input type="range" class="uso-slider" min="0" max="100" value="0" step="5" oninput="setUso('${tid}',this.value,this)" style="--val:0%"><div class="uso-val" id="uso-val-${tid}">0%</div></div>
+            <div><select class="estado" onchange="setEstado('${tid}',this.value)"><option value="activa">✅ Activa</option><option value="parcial">⚡ Parcial</option><option value="sin-usar">❌ Sin usar</option><option value="no-tengo">— No la tenemos</option></select></div>
+            <div id="oport-badge-${tid}"><span class="oport op-baja">OK</span></div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    container.appendChild(catDiv);
+    if(ci===0) toggleCat(0);
+  });
+}
+
+function toggleCat(ci){
+  document.getElementById(`cat-header-${ci}`).classList.toggle('open');
+  document.getElementById(`cat-body-${ci}`).classList.toggle('open');
+}
+function setUso(tid,val,slider){
+  toolData[tid].uso=parseInt(val);
+  slider.style.setProperty('--val',val+'%');
+  document.getElementById(`uso-val-${tid}`).textContent=val+'%';
+  updateBadge(tid); updateCatScores(); updateResumen();
+}
+function setEstado(tid,val){ toolData[tid].estado=val; updateBadge(tid); updateResumen(); }
+function updateBadge(tid){
+  const d=toolData[tid];
+  const badge=document.getElementById(`oport-badge-${tid}`);
+  if(d.estado==='no-tengo'){badge.innerHTML='<span class="oport" style="background:#eee;color:#888">–</span>';return;}
+  let cls,t2;
+  if(d.uso<30){cls='op-alta';t2='Alta';}else if(d.uso<65){cls='op-media';t2='Media';}else{cls='op-baja';t2='Bien';}
+  badge.innerHTML=`<span class="oport ${cls}">${t2}</span>`;
+}
+function updateCatScores(){
+  let tidIdx=0;
+  categorias.forEach((cat,ci)=>{
+    const usos=cat.tools.map(()=>{const tid=`tool-${tidIdx++}`;return toolData[tid]?toolData[tid].uso:0;});
+    document.getElementById(`cat-score-${ci}`).textContent=Math.round(usos.reduce((a,b)=>a+b,0)/usos.length)+'%';
+  });
+}
+function updateResumen(){
+  const all=Object.values(toolData);
+  const activas=all.filter(d=>d.estado!=='no-tengo');
+  const avg=activas.length?Math.round(activas.reduce((a,d)=>a+d.uso,0)/activas.length):0;
+  const sinUsar=activas.filter(d=>d.uso<40).length;
+  const opAlta=activas.filter(d=>d.uso<30).length;
+  document.getElementById('score-total').textContent=avg+'%';
+  document.getElementById('r-herramientas').textContent=activas.filter(d=>d.estado==='activa'||d.estado==='parcial').length;
+  document.getElementById('r-uso').textContent=avg+'%';
+  document.getElementById('r-sub').textContent=sinUsar;
+  document.getElementById('r-oport').textContent=opAlta;
+  const opList=document.getElementById('oport-list');
+  const oportItems=Object.values(toolData).filter(d=>d.uso<30&&d.estado!=='no-tengo').sort((a,b)=>a.uso-b.uso);
+  opList.innerHTML=oportItems.length===0
+    ?'<div style="font-size:13px;color:rgba(255,255,255,.4)">¡Buen trabajo! No hay oportunidades criticas detectadas aun</div>'
+    :oportItems.slice(0,4).map(it=>`<div class="oport-item"><span class="tag">${it.uso}% uso</span>${it.name}<span style="font-size:11px;color:rgba(255,255,255,.4);margin-left:auto">${it.cat}</span></div>`).join('');
+}
+
+const tick=()=>new Promise(r=>setTimeout(r,0));
+
+async function generarPDF(){
+  const btn=document.getElementById('btn-pdf');
+  const progressWrap=document.getElementById('progress-wrap');
+  const pfill=document.getElementById('progress-fill');
+  const plbl=document.getElementById('progress-label');
+  btn.disabled=true; btn.textContent='Generando...';
+  progressWrap.classList.add('visible');
+  const prog=(p,t)=>{pfill.style.width=p+'%';plbl.textContent=t;};
+
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const PW=210,PH=297,ML=16,MR=16,CW=178;
+    const fc=(r,g,b)=>doc.setFillColor(r,g,b);
+    const tc=(r,g,b)=>doc.setTextColor(r,g,b);
+    const dc=(r,g,b)=>doc.setDrawColor(r,g,b);
+    const frect=(x,y,w,h,rx=0)=>rx>0?doc.roundedRect(x,y,w,h,rx,rx,'F'):doc.rect(x,y,w,h,'F');
+    const ln=(x1,y1,x2,y2)=>doc.line(x1,y1,x2,y2);
+    const txt=(s,x,y,o)=>doc.text(String(s||''),x,y,o||{});
+    const safe=s=>String(s||'').trim()||'–';
+    const wrapT=(s,w)=>doc.splitTextToSize(String(s||''),w);
+
+    const empresa=safe(document.getElementById('empresa').value);
+    const sector=safe(document.getElementById('sector').value);
+    const colab=safe(document.getElementById('colaboradores').value);
+    const notas=[safe(document.getElementById('nota1').value),safe(document.getElementById('nota2').value),safe(document.getElementById('nota3').value),safe(document.getElementById('nota4').value)];
+    const notaLabels=['Tecnologia que necesitas','Suscripciones sin uso claro','Proceso que tarda mas','Proximos 3 pasos'];
+    const all=Object.values(toolData);
+    const activas=all.filter(d=>d.estado!=='no-tengo');
+    const avg=activas.length?Math.round(activas.reduce((a,d)=>a+d.uso,0)/activas.length):0;
+    const sinUsar=activas.filter(d=>d.uso<40).length;
+    const opAlta=activas.filter(d=>d.uso<30).length;
+    const fecha=new Date().toLocaleDateString('es-PE',{day:'2-digit',month:'long',year:'numeric'});
+
+    prog(10,'Construyendo portada...'); await tick();
+
+    // Header
+    fc(28,28,26); frect(0,0,PW,48);
+    fc(45,91,227); frect(ML,48,20,1.5);
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); tc(45,91,227);
+    txt('TALLER INNOVACION AMBIDIESTRA  ·  HERRAMIENTA 3 DE 4',ML,13);
+    doc.setFontSize(24); doc.setFont('helvetica','bold'); tc(255,255,255);
+    txt('Auditoria Tech Express',ML,29);
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); tc(170,165,158);
+    txt(empresa+'   ·   '+fecha,ML,40);
+
+    // Chips
+    [['EMPRESA',empresa],['SECTOR',sector],['COLABORADORES',colab],['USO PROMEDIO',avg+'%']].forEach((c,i)=>{
+      const cx=ML+i*46;
+      doc.setFontSize(6.5); doc.setFont('helvetica','bold'); tc(120,115,108); txt(c[0],cx,58);
+      doc.setFontSize(8.5); doc.setFont('helvetica','bold'); tc(28,28,26); txt(c[1],cx,64);
+    });
+    doc.setLineWidth(0.25); dc(212,207,196); ln(ML,68,PW-MR,68);
+
+    let y=74;
+    prog(20,'Generando resumen...'); await tick();
+
+    // Bloque resumen oscuro
+    fc(28,28,26); frect(ML,y,CW,28,4);
+    const kpis=[['HERRAMIENTAS ACTIVAS',activas.filter(d=>d.estado==='activa'||d.estado==='parcial').length],['USO PROMEDIO',avg+'%'],['SIN APROVECHAR',sinUsar],['OPORTUNIDADES ALTAS',opAlta]];
+    kpis.forEach((k,i)=>{
+      const kx=ML+5+i*(CW/4);
+      doc.setFontSize(6.5); doc.setFont('helvetica','bold'); tc(100,96,90); txt(k[0],kx,y+7);
+      doc.setFontSize(20); doc.setFont('helvetica','bold'); tc(255,255,255); txt(String(k[1]),kx,y+20);
+      if(i<3){doc.setLineWidth(0.2);dc(60,58,54);ln(kx+CW/4-2,y+5,kx+CW/4-2,y+24);}
+    });
+    y+=34;
+
+    prog(32,'Stack tecnologico...'); await tick();
+
+    // Por categoría
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); tc(45,91,227);
+    txt('STACK TECNOLOGICO POR CATEGORIA',ML,y);
+    fc(45,91,227); frect(ML,y+1.5,32,0.8);
+    y+=8;
+
+    // Header tabla
+    fc(235,232,226); frect(ML,y,CW,6,1);
+    doc.setFontSize(6.5); doc.setFont('helvetica','bold'); tc(107,104,96);
+    txt('HERRAMIENTA',ML+3,y+4); txt('USO',ML+CW*0.55,y+4); txt('ESTADO',ML+CW*0.72,y+4); txt('OPORTUNIDAD',ML+CW*0.88,y+4);
+    y+=7;
+
+    const catColors=[[45,91,227],[200,80,42],[42,102,68],[168,92,18],[139,58,184]];
+    categorias.forEach((cat,ci)=>{
+      // Cat header
+      fc(...catColors[ci%catColors.length]); frect(ML,y,CW,5,0);
+      doc.setFontSize(7); doc.setFont('helvetica','bold'); tc(255,255,255);
+      txt(cat.icon+' '+cat.title,ML+3,y+3.8);
+      y+=6;
+      let tidIdx=0;
+      // contar desde inicio para este cat
+      let baseIdx=0;
+      categorias.slice(0,ci).forEach(c=>baseIdx+=c.tools.length);
+      cat.tools.forEach((_,ti)=>{
+        const tid='tool-'+(baseIdx+ti);
+        const d=toolData[tid];
+        if(!d) return;
+        fc(ti%2===0?245:248,ti%2===0?242:245,ti%2===0?238:242);
+        frect(ML,y,CW,7,0);
+        doc.setFontSize(7.5); doc.setFont('helvetica','normal'); tc(28,28,26);
+        txt(d.name,ML+3,y+5);
+        // Barra uso
+        const bW=CW*0.14;
+        fc(210,207,200); frect(ML+CW*0.55,y+2,bW,3,1);
+        if(d.uso>0){fc(...catColors[ci%catColors.length]);frect(ML+CW*0.55,y+2,bW*d.uso/100,3,1);}
+        doc.setFontSize(7); doc.setFont('helvetica','bold'); tc(...catColors[ci%catColors.length]);
+        txt(d.uso+'%',ML+CW*0.55+bW+2,y+5);
+        // Estado
+        const estadoLabel=d.estado==='activa'?'Activa':d.estado==='parcial'?'Parcial':d.estado==='sin-usar'?'Sin usar':'No tenemos';
+        const ec=d.estado==='activa'?[42,102,68]:d.estado==='parcial'?[168,92,18]:d.estado==='sin-usar'?[196,43,43]:[150,145,138];
+        doc.setFontSize(7); doc.setFont('helvetica','normal'); tc(...ec);
+        txt(estadoLabel,ML+CW*0.72,y+5);
+        // Oportunidad
+        const opTxt=d.estado==='no-tengo'?'–':d.uso<30?'Alta':d.uso<65?'Media':'Bien';
+        const opC=d.estado==='no-tengo'?[150,145,138]:d.uso<30?[196,43,43]:d.uso<65?[168,92,18]:[42,102,68];
+        doc.setFontSize(7); doc.setFont('helvetica','bold'); tc(...opC);
+        txt(opTxt,ML+CW*0.88,y+5);
+        y+=8;
+      });
+      y+=2;
+      if(y>PH-30){doc.addPage();y=20;} // nueva pagina si necesario
+    });
+
+    prog(72,'Construyendo página 2...'); await tick();
+
+    // Oportunidades top
+    doc.addPage();
+    fc(28,28,26); frect(0,0,PW,22);
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); tc(45,91,227); txt('AUDITORIA TECH EXPRESS',ML,10);
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); tc(140,135,128); txt(empresa+'  ·  '+fecha,ML,16);
+    doc.setFontSize(6.5); tc(90,86,80); txt('2 / 2',PW-MR,13,{align:'right'});
+
+    let y2=30;
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); tc(45,91,227);
+    txt('PRINCIPALES OPORTUNIDADES DE OPTIMIZACION',ML,y2);
+    fc(45,91,227); frect(ML,y2+1.5,40,0.8);
+    y2+=8;
+
+    const oportItems=Object.values(toolData).filter(d=>d.uso<30&&d.estado!=='no-tengo').sort((a,b)=>a.uso-b.uso).slice(0,6);
+    if(oportItems.length){
+      oportItems.forEach((it,i)=>{
+        fc(i%2===0?245:248,i%2===0?242:245,i%2===0?238:242);
+        frect(ML,y2,CW,10,2);
+        fc(196,43,43); frect(ML+3,y2+2,16,6,1.5);
+        doc.setFontSize(7); doc.setFont('helvetica','bold'); tc(255,255,255); txt(it.uso+'% uso',ML+11,y2+5.8,{align:'center'});
+        doc.setFontSize(8); doc.setFont('helvetica','bold'); tc(28,28,26); txt(it.name,ML+22,y2+5.8);
+        doc.setFontSize(7); doc.setFont('helvetica','normal'); tc(107,104,96); txt(it.cat,PW-MR,y2+5.8,{align:'right'});
+        y2+=12;
+      });
+    }else{
+      fc(230,245,236); frect(ML,y2,CW,10,2);
+      doc.setFontSize(8.5); doc.setFont('helvetica','bold'); tc(42,102,68); txt('¡Sin oportunidades criticas! Tu stack esta bien aprovechado.',ML+5,y2+7);
+      y2+=14;
+    }
+    y2+=8;
+
+    // Notas
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); tc(45,91,227);
+    txt('OBSERVACIONES Y PROXIMOS PASOS',ML,y2);
+    fc(45,91,227); frect(ML,y2+1.5,30,0.8);
+    y2+=8;
+    const nW=(CW-8)/2;
+    notas.forEach((nota,i)=>{
+      const nx=ML+(i%2)*(nW+8);
+      const ny=y2+Math.floor(i/2)*26;
+      fc(245,242,238); frect(nx,ny,nW,22,2);
+      doc.setLineWidth(0.3); dc(218,213,204); doc.roundedRect(nx,ny,nW,22,2,2,'S');
+      doc.setFontSize(6.8); doc.setFont('helvetica','bold'); tc(107,104,96); txt(notaLabels[i],nx+4,ny+6);
+      doc.setLineWidth(0.2); dc(218,213,204); ln(nx+3,ny+8,nx+nW-3,ny+8);
+      doc.setFontSize(8); doc.setFont('helvetica','normal'); tc(28,28,26);
+      doc.text(wrapT(nota,nW-8).slice(0,2),nx+4,ny+13);
+    });
+
+    // Footer p2
+    doc.setLineWidth(0.25); dc(212,207,196); ln(ML,PH-12,PW-MR,PH-12);
+    doc.setFontSize(6.5); doc.setFont('helvetica','normal'); tc(170,165,158);
+    txt('Taller Innovacion Ambidiestra  ·  Lima, Peru',ML,PH-7);
+    txt('Herramienta 3  ·  Auditoria Tech Express',PW-MR,PH-7,{align:'right'});
+
+    prog(95,'Guardando PDF...'); await tick();
+    doc.save('tech-audit-'+(empresa.replace(/[^a-z0-9]/gi,'-').toLowerCase())+'.pdf');
+    prog(100,'¡Listo!');
+    setTimeout(()=>{progressWrap.classList.remove('visible');pfill.style.width='0%';},2500);
+  }catch(e){
+    console.error(e); alert('Error al generar PDF: '+e.message);
+    progressWrap.classList.remove('visible');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg> Descargar reporte PDF';
+  }
+}
+
+buildCats();
+updateResumen();
+</script>
+</body>
+</html>
