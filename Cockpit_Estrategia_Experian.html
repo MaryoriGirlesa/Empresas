@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cockpit de Estrategia · 3 iniciativas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --purple:#77127B; --purple-deep:#4E0C51; --raspberry:#C1188B; --blue:#426DA9;
+    --ink:#241026; --gray:#6E6673; --line:#E7E1EA; --bg:#F5F1F6; --card:#FFFFFF;
+    --tint:#F4EEF5;
+    --g:#2E7D5B; --a:#C08A1E; --r:#C0392B;
+    --shadow:0 1px 2px rgba(36,16,38,.06), 0 6px 18px rgba(36,16,38,.08);
+    --radius:14px;
+    --display:'Sora', system-ui, sans-serif;
+    --body:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:var(--body); color:var(--ink); background:var(--bg); font-size:15px; line-height:1.45;}
+  h1,h2,h3{font-family:var(--display); margin:0; font-weight:700; letter-spacing:-.01em}
+  button{font-family:var(--body); cursor:pointer}
+  input,select,textarea{font-family:var(--body); font-size:14px; color:var(--ink)}
+  input,select,textarea{border:1px solid var(--line); border-radius:8px; padding:7px 9px; background:#fff; width:100%}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--purple); outline-offset:1px; border-color:var(--purple)}
+  textarea{resize:vertical; min-height:38px}
+  .wrap{max-width:1320px; margin:0 auto; padding:0 20px 64px}
+
+  /* Top bar */
+  .top{background:var(--purple-deep); color:#fff; position:relative; overflow:hidden}
+  .top .squ{position:absolute; border-radius:26px; background:var(--raspberry); opacity:.16}
+  .top .s1{width:220px;height:220px; right:-60px; top:-90px}
+  .top .s2{width:120px;height:120px; right:120px; bottom:-70px}
+  .topin{max-width:1320px; margin:0 auto; padding:20px 20px 22px; position:relative; z-index:1;
+         display:flex; align-items:flex-start; justify-content:space-between; gap:18px; flex-wrap:wrap}
+  .brand{display:flex; gap:13px; align-items:center}
+  .mark{width:40px;height:40px;border-radius:12px;background:var(--raspberry);flex:0 0 auto;
+        display:grid;place-items:center;font-family:var(--display);font-weight:800;color:#fff;font-size:19px}
+  .brand .eyebrow{font-size:11px;letter-spacing:.18em;color:#E3BFDE;font-weight:600;text-transform:uppercase}
+  .brand h1{font-size:22px;color:#fff;line-height:1.15}
+  .brand p{margin:2px 0 0;color:#EAD3E6;font-size:13px}
+  .tools{display:flex; gap:8px; flex-wrap:wrap}
+  .btn{border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.08); color:#fff;
+       padding:8px 13px;border-radius:9px;font-weight:600;font-size:13px; display:inline-flex; gap:7px; align-items:center}
+  .btn:hover{background:rgba(255,255,255,.18)}
+  .btn.primary{background:var(--raspberry); border-color:var(--raspberry)}
+  .btn.primary:hover{background:#a9147a}
+
+  /* summary strip */
+  .summary{display:flex; gap:22px; flex-wrap:wrap; padding:14px 0 2px; color:var(--gray); font-size:13px}
+  .summary b{font-family:var(--display); color:var(--ink); font-size:17px; font-weight:700}
+  .summary .chip{display:flex;align-items:baseline;gap:7px}
+
+  /* health cards */
+  .health{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:14px 0 22px}
+  .hcard{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+         padding:16px 16px 15px; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; position:relative}
+  .hcard:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(36,16,38,.13)}
+  .hcard.active{outline:2.5px solid var(--purple); outline-offset:0}
+  .hcard .hhead{display:flex; align-items:center; gap:9px; margin-bottom:9px}
+  .dot{width:12px;height:12px;border-radius:4px;flex:0 0 auto}
+  .hcard .pname{font-family:var(--display); font-weight:700; font-size:15.5px; line-height:1.2}
+  .hcard .lead{color:var(--gray); font-size:12.5px; margin:0 0 12px}
+  .rag{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:3px 9px; border-radius:20px}
+  .rag.G{background:#E4F3EC;color:var(--g)} .rag.A{background:#FBF0DC;color:var(--a)} .rag.R{background:#F8E3E1;color:var(--r)}
+  .progress{height:9px;border-radius:6px;background:#EDE7EF;overflow:hidden;margin:11px 0 6px}
+  .progress > i{display:block;height:100%;border-radius:6px}
+  .prow{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--gray)}
+  .pval{font-family:var(--display);font-weight:700;color:var(--ink)}
+  .next{font-size:12.5px;color:var(--ink);margin-top:11px;padding-top:11px;border-top:1px solid var(--line)}
+  .next span{color:var(--gray)}
+
+  /* filters */
+  .bar{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin:6px 0 12px}
+  .filters{display:flex; gap:8px; flex-wrap:wrap}
+  .fchip{border:1px solid var(--line); background:#fff; color:var(--ink); padding:7px 14px; border-radius:20px; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:8px}
+  .fchip.on{background:var(--ink); color:#fff; border-color:var(--ink)}
+  .fchip .fdot{width:9px;height:9px;border-radius:3px}
+  .sectlabel{font-family:var(--display); font-weight:700; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--purple)}
+
+  /* kanban */
+  .board{display:flex; gap:14px; overflow-x:auto; padding:4px 2px 12px; scroll-snap-type:x proximity}
+  .col{flex:0 0 262px; background:#EFEAF1; border-radius:14px; padding:10px; scroll-snap-align:start; min-height:120px}
+  .col.drop{outline:2px dashed var(--purple); outline-offset:-4px; background:#E7DEEA}
+  .colhead{display:flex; align-items:center; justify-content:space-between; margin:2px 4px 10px}
+  .colhead h3{font-size:13.5px; color:var(--ink); font-family:var(--display); font-weight:700}
+  .count{font-size:12px; color:var(--gray); background:#fff; border-radius:20px; padding:1px 9px; font-weight:600}
+  .task{background:#fff; border:1px solid var(--line); border-radius:11px; padding:11px 11px 9px; margin-bottom:9px; box-shadow:0 1px 2px rgba(36,16,38,.05); cursor:grab}
+  .task:active{cursor:grabbing}
+  .task.dragging{opacity:.45}
+  .task .tt{display:flex; gap:8px; align-items:flex-start}
+  .task .tdot{width:9px;height:9px;border-radius:3px;margin-top:5px;flex:0 0 auto}
+  .task .ttitle{font-weight:600; font-size:13.5px; line-height:1.3}
+  .task .meta{display:flex; justify-content:space-between; align-items:center; margin-top:9px; color:var(--gray); font-size:11.5px}
+  .task .meta .who{display:inline-flex;align-items:center;gap:5px}
+  .task .acts{display:flex; gap:4px}
+  .icbtn{border:1px solid var(--line); background:#fff; border-radius:7px; width:26px;height:24px; display:grid;place-items:center; color:var(--gray); font-size:13px; padding:0}
+  .icbtn:hover{color:var(--purple); border-color:var(--purple)}
+  .addtask{width:100%; border:1px dashed #C9B9CE; background:transparent; color:var(--purple); border-radius:10px; padding:9px; font-weight:600; font-size:13px}
+  .addtask:hover{background:#fff}
+
+  /* detail */
+  .detail{margin-top:26px}
+  .dhead{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px}
+  .dhead h2{font-size:18px}
+  .dhead .selwrap{display:flex;align-items:center;gap:8px;color:var(--gray);font-size:13px}
+  .dhead select{width:auto; min-width:230px}
+  .dgrid{display:grid; grid-template-columns:1.15fr 1fr 1.1fr; gap:16px}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px}
+  .panel > h3{font-size:14.5px; color:var(--purple); margin-bottom:3px}
+  .panel > .hint{color:var(--gray); font-size:12px; margin-bottom:12px}
+  .objbox{margin-bottom:16px}
+  .objbox label, .fieldlabel{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--gray); font-weight:600; display:block; margin-bottom:4px}
+  .prow2{display:flex; gap:10px; margin-bottom:10px}
+  .prow2 > div{flex:1}
+  .row{border-top:1px solid var(--line); padding:12px 0}
+  .row:first-of-type{border-top:none}
+  .okr .kr{display:flex; gap:8px; align-items:center; margin-bottom:8px}
+  .okr .kr input.krname{flex:1}
+  .okr .nums{display:flex; gap:8px; align-items:center}
+  .okr .nums input{width:66px; text-align:center}
+  .okr .u{color:var(--gray); font-size:12px; min-width:54px}
+  .okr .barmini{height:7px;border-radius:5px;background:#EDE7EF;overflow:hidden;margin-top:2px}
+  .okr .barmini > i{display:block;height:100%}
+  .hito{display:flex; gap:9px; align-items:center; padding:8px 0; border-top:1px solid var(--line)}
+  .hito:first-child{border-top:none}
+  .hito input[type=checkbox]{width:18px;height:18px;flex:0 0 auto}
+  .hito .hname{flex:1}
+  .hito input[type=date]{width:150px}
+  .hito.done .hname{text-decoration:line-through; color:var(--gray)}
+  .risk{padding:11px 0; border-top:1px solid var(--line)}
+  .risk:first-child{border-top:none}
+  .risk .rtop{display:flex; gap:8px; align-items:center; margin-bottom:7px}
+  .risk .rtop input{flex:1}
+  .sev{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px; white-space:nowrap}
+  .sev.alto{background:#F8E3E1;color:var(--r)} .sev.medio{background:#FBF0DC;color:var(--a)} .sev.bajo{background:#E4F3EC;color:var(--g)}
+  .risk .rbot{display:flex; gap:8px}
+  .risk .rbot select{width:130px}
+  .miniadd{margin-top:12px; border:1px dashed #C9B9CE; background:transparent; color:var(--purple); border-radius:9px; padding:8px 12px; font-weight:600; font-size:13px}
+  .miniadd:hover{background:var(--tint)}
+  .del{border:none;background:none;color:#B99; font-size:16px; padding:2px 6px; border-radius:6px}
+  .del:hover{color:var(--r); background:#F8E3E1}
+
+  /* modal */
+  .overlay{position:fixed; inset:0; background:rgba(36,16,38,.5); display:none; place-items:center; z-index:50; padding:18px}
+  .overlay.show{display:grid}
+  .modal{background:#fff; border-radius:16px; width:min(440px,100%); padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal h3{font-size:17px; margin-bottom:16px}
+  .modal .mfield{margin-bottom:13px}
+  .modal .mfield label{font-size:12px;font-weight:600;color:var(--gray);display:block;margin-bottom:5px}
+  .modal .mactions{display:flex; gap:10px; justify-content:flex-end; margin-top:8px}
+  .btn2{padding:9px 16px;border-radius:9px;font-weight:600;font-size:14px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+  .btn2.primary{background:var(--purple);border-color:var(--purple);color:#fff}
+  .btn2.primary:hover{background:#640f68}
+
+  .foot{color:var(--gray); font-size:12px; text-align:center; margin-top:34px; line-height:1.6}
+  .toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff;
+         padding:11px 20px; border-radius:10px; font-size:13.5px; opacity:0; pointer-events:none; transition:.25s; z-index:60}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:960px){
+    .health{grid-template-columns:1fr; }
+    .dgrid{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+  <header class="top">
+    <div class="squ s1"></div><div class="squ s2"></div>
+    <div class="topin">
+      <div class="brand">
+        <div class="mark">E</div>
+        <div>
+          <div class="eyebrow">Experian · Strategy Specialist — Spanish Latam</div>
+          <h1>Cockpit de Estrategia</h1>
+          <p>Seguimiento en paralelo de 3 iniciativas · OKRs, hitos, riesgos y tareas</p>
+        </div>
+      </div>
+      <div class="tools">
+        <button class="btn primary" data-action="add-task">+ Nueva tarea</button>
+        <button class="btn" data-action="export">Exportar</button>
+        <button class="btn" data-action="import">Importar</button>
+        <button class="btn" data-action="reset">Reiniciar ejemplos</button>
+        <input type="file" id="fileimp" accept="application/json" style="display:none">
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="summary" id="summary"></div>
+    <section class="health" id="health"></section>
+
+    <div class="bar">
+      <div class="filters" id="filters"></div>
+      <div class="sectlabel">Tablero por etapas</div>
+    </div>
+    <section class="board" id="board"></section>
+
+    <section class="detail">
+      <div class="dhead">
+        <h2 id="dtitle">Detalle</h2>
+        <div class="selwrap">
+          <span>Ver iniciativa:</span>
+          <select id="focussel" data-action="focus"></select>
+        </div>
+      </div>
+      <div class="objbox panel" style="box-shadow:none;background:var(--tint);border:none">
+        <label class="fieldlabel">Objetivo de la iniciativa</label>
+        <textarea id="objective" data-k="proj" data-field="objective" rows="2"></textarea>
+        <div class="prow2" style="margin-top:12px">
+          <div><label class="fieldlabel">Nombre</label><input id="pname" data-k="proj" data-field="name"></div>
+          <div><label class="fieldlabel">Líder</label><input id="plead" data-k="proj" data-field="lead"></div>
+          <div style="max-width:150px"><label class="fieldlabel">Estado</label>
+            <select id="prag" data-k="proj" data-field="rag">
+              <option value="G">🟢 En marcha</option><option value="A">🟡 Atención</option><option value="R">🔴 Riesgo</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="dgrid" style="margin-top:16px">
+        <div class="panel okr" id="okrpanel">
+          <h3>OKRs y métricas clave</h3>
+          <div class="hint">Objetivo → resultados clave. El avance se calcula solo (actual ÷ meta).</div>
+          <div id="okrlist"></div>
+          <button class="miniadd" data-action="add-okr">+ Añadir resultado clave</button>
+        </div>
+        <div class="panel" id="hitopanel">
+          <h3>Hitos y fechas</h3>
+          <div class="hint">Marca el check cuando se cumpla. Ordénalos por fecha.</div>
+          <div id="hitolist"></div>
+          <button class="miniadd" data-action="add-hito">+ Añadir hito</button>
+        </div>
+        <div class="panel" id="riskpanel">
+          <h3>Riesgos y bloqueos</h3>
+          <div class="hint">Severidad, estado y plan de mitigación.</div>
+          <div id="risklist"></div>
+          <button class="miniadd" data-action="add-risk">+ Añadir riesgo</button>
+        </div>
+      </div>
+    </section>
+
+    <p class="foot">
+      Tus cambios se guardan automáticamente en este navegador.
+      Usa <b>Exportar</b> para respaldar o compartir el tablero, e <b>Importar</b> para restaurarlo en otro equipo.<br>
+      Herramienta de trabajo — datos de ejemplo editables basados en el contexto de Experian (adopción de IA, inclusión y confianza).
+    </p>
+  </main>
+
+  <!-- Task modal -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h3 id="mtitle">Nueva tarea</h3>
+      <div class="mfield"><label>Título</label><input id="m_title" placeholder="p. ej. Definir métricas de productividad"></div>
+      <div class="mfield"><label>Iniciativa</label><select id="m_proj"></select></div>
+      <div class="prow2">
+        <div class="mfield" style="flex:1"><label>Responsable</label><input id="m_owner" placeholder="p. ej. Tú, Data Science…"></div>
+        <div class="mfield" style="flex:1"><label>Fecha objetivo</label><input id="m_due" type="date"></div>
+      </div>
+      <div class="mfield"><label>Etapa</label><select id="m_stage"></select></div>
+      <div class="mactions">
+        <button class="btn2" data-action="cancel-task">Cancelar</button>
+        <button class="btn2 primary" data-action="save-task">Guardar tarea</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY="experian_cockpit_v1";
+  var ETAPAS=["Descubrimiento","Priorización","En ejecución","En revisión","Cerrado"];
+  var RAGLABEL={G:"En marcha",A:"Atención",R:"Riesgo"};
+
+  function seed(){
+    return {
+      version:1, updated:Date.now(), etapas:ETAPAS.slice(),
+      focus:"p1", filter:"all",
+      projects:[
+        {id:"p1", color:"#77127B", name:"Adopción de IA en productividad interna", lead:"Tú · Estrategia", rag:"A",
+         objective:"Escalar el uso de GenAI en los equipos de la región para acelerar entregables y elevar la calidad ejecutiva.",
+         okrs:[
+           {kr:"Equipos con GenAI en su flujo de trabajo", current:3, target:8, unit:"equipos"},
+           {kr:"Reducción de tiempo en documentación ejecutiva", current:15, target:40, unit:"%"},
+           {kr:"Casos de uso internos validados", current:2, target:6, unit:"casos"}
+         ],
+         milestones:[
+           {title:"Inventario de casos de uso", date:"2026-08-15", done:true},
+           {title:"Piloto con 2 equipos", date:"2026-09-30", done:false},
+           {title:"Playbook de adopción publicado", date:"2026-11-15", done:false}
+         ],
+         risks:[
+           {title:"Baja adopción por falta de mindset", sev:"alto", estado:"En manejo", mit:"Sesiones de enablement + champions por equipo"},
+           {title:"Datos sensibles en prompts", sev:"medio", estado:"Abierto", mit:"Guía de uso responsable + revisión legal"}
+         ]},
+        {id:"p2", color:"#C1188B", name:"Scoring con datos alternativos para inclusión", lead:"Producto · Riesgo", rag:"G",
+         objective:"Ampliar el acceso a crédito de segmentos sin historial usando datos alternativos, de forma responsable.",
+         okrs:[
+           {kr:"Población evaluable adicional", current:20, target:100, unit:"K pers."},
+           {kr:"Precisión del modelo (AUC)", current:72, target:80, unit:"%"},
+           {kr:"Aprobaciones inclusivas sobre total", current:8, target:25, unit:"%"}
+         ],
+         milestones:[
+           {title:"Fuentes de datos alternativos definidas", date:"2026-08-01", done:true},
+           {title:"Modelo piloto entrenado", date:"2026-10-01", done:false},
+           {title:"Validación regulatoria", date:"2026-12-01", done:false}
+         ],
+         risks:[
+           {title:"Sesgo del modelo en subgrupos", sev:"alto", estado:"En manejo", mit:"Pruebas de equidad + revisión de features"},
+           {title:"Calidad de datos alternativos", sev:"medio", estado:"Abierto", mit:"Acuerdos de calidad con proveedores"}
+         ]},
+        {id:"p3", color:"#426DA9", name:"Confianza y explicabilidad (marco 4 E)", lead:"Riesgo · Compliance", rag:"R",
+         objective:"Diseñar el marco de confianza (Explicar, Empoderar, Educar, Evidenciar) para decisiones automatizadas de cara al cliente.",
+         okrs:[
+           {kr:"Decisiones con explicación al cliente", current:10, target:90, unit:"%"},
+           {kr:"Casos con opción de revisión humana", current:30, target:100, unit:"%"},
+           {kr:"Cobertura del marco 4 E", current:1, target:4, unit:"de 4"}
+         ],
+         milestones:[
+           {title:"Diagnóstico de explicabilidad actual", date:"2026-08-20", done:true},
+           {title:"Framework 4 E aprobado por comité", date:"2026-10-15", done:false},
+           {title:"Piloto de explicaciones al cliente", date:"2026-12-10", done:false}
+         ],
+         risks:[
+           {title:"Vacío regulatorio / cambios normativos", sev:"alto", estado:"Abierto", mit:"Monitoreo regulatorio + enfoque conservador"},
+           {title:"Modelos poco interpretables (caja negra)", sev:"alto", estado:"En manejo", mit:"Adoptar SHAP/XAI + human-in-the-loop"},
+           {title:"Baja confianza del usuario final", sev:"medio", estado:"Abierto", mit:"Comunicación clara + educación financiera"}
+         ]}
+      ],
+      tasks:[
+        {id:t(), pid:"p1", title:"Mapear herramientas de IA en uso", owner:"Tú", due:"2026-08-10", stage:"Cerrado"},
+        {id:t(), pid:"p1", title:"Definir métricas de productividad", owner:"Tú", due:"2026-08-25", stage:"En ejecución"},
+        {id:t(), pid:"p1", title:"Reclutar champions por equipo", owner:"RRHH", due:"2026-09-05", stage:"Priorización"},
+        {id:t(), pid:"p1", title:"Diseñar sesión de enablement", owner:"L&D", due:"2026-09-20", stage:"Descubrimiento"},
+        {id:t(), pid:"p2", title:"Acuerdo con proveedores de datos", owner:"Alianzas", due:"2026-08-05", stage:"Cerrado"},
+        {id:t(), pid:"p2", title:"Feature engineering v1", owner:"Data Science", due:"2026-09-10", stage:"En ejecución"},
+        {id:t(), pid:"p2", title:"Pruebas de equidad del modelo", owner:"Riesgo", due:"2026-09-25", stage:"En revisión"},
+        {id:t(), pid:"p2", title:"Business case para comité", owner:"Tú", due:"2026-10-05", stage:"Priorización"},
+        {id:t(), pid:"p3", title:"Diagnóstico de explicabilidad", owner:"Compliance", due:"2026-08-20", stage:"Cerrado"},
+        {id:t(), pid:"p3", title:"Definir las 4 E del marco", owner:"Tú", due:"2026-09-15", stage:"En ejecución"},
+        {id:t(), pid:"p3", title:"Seleccionar técnica XAI (SHAP)", owner:"Data Science", due:"2026-09-30", stage:"Priorización"},
+        {id:t(), pid:"p3", title:"Guion de comunicación al cliente", owner:"Marketing", due:"2026-10-10", stage:"Descubrimiento"}
+      ]
+    };
+  }
+  function t(){ return "id"+Math.random().toString(36).slice(2,9); }
+
+  // ---------- storage (localStorage w/ in-memory fallback) ----------
+  var mem=null, canStore=true;
+  function load(){
+    try{ var raw=localStorage.getItem(KEY); if(raw){ return JSON.parse(raw); } }
+    catch(e){ canStore=false; }
+    return null;
+  }
+  function save(){
+    S.updated=Date.now();
+    if(canStore){ try{ localStorage.setItem(KEY, JSON.stringify(S)); return; }catch(e){ canStore=false; } }
+    mem=JSON.stringify(S);
+  }
+  var S = load() || (mem?JSON.parse(mem):null) || seed();
+  if(!S.etapas) S.etapas=ETAPAS.slice();
+
+  // ---------- helpers ----------
+  var $=function(s,r){return (r||document).querySelector(s);};
+  function proj(id){ for(var i=0;i<S.projects.length;i++) if(S.projects[i].id===id) return S.projects[i]; return S.projects[0]; }
+  function focusP(){ return proj(S.focus); }
+  function esc(x){ return (x==null?"":String(x)).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function okrPct(o){ var tg=parseFloat(o.target); if(!tg||tg<=0) return 0; var p=(parseFloat(o.current)||0)/tg*100; return Math.max(0,Math.min(100,Math.round(p))); }
+  function projPct(p){ if(!p.okrs.length) return 0; var s=0; for(var i=0;i<p.okrs.length;i++) s+=okrPct(p.okrs[i]); return Math.round(s/p.okrs.length); }
+  function ragColor(r){ return r==="G"?"var(--g)":r==="A"?"var(--a)":"var(--r)"; }
+  function fmtDate(d){ if(!d) return "sin fecha"; var p=d.split("-"); if(p.length!==3) return d; return p[2]+"/"+p[1]; }
+  function toast(m){ var el=$("#toast"); el.textContent=m; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove("show");},1900); }
+
+  // ---------- render ----------
+  function render(){
+    renderSummary(); renderHealth(); renderFilters(); renderBoard(); renderDetail();
+  }
+
+  function renderSummary(){
+    var tasks=S.tasks.length, done=0, hrisk=0, hitos=0, hdone=0;
+    S.tasks.forEach(function(x){ if(x.stage==="Cerrado") done++; });
+    S.projects.forEach(function(p){
+      p.risks.forEach(function(r){ if(r.sev==="alto" && r.estado!=="Cerrado") hrisk++; });
+      p.milestones.forEach(function(m){ hitos++; if(m.done) hdone++; });
+    });
+    $("#summary").innerHTML =
+      chip(S.projects.length,"iniciativas en paralelo")+
+      chip(done+"/"+tasks,"tareas cerradas")+
+      chip(hdone+"/"+hitos,"hitos cumplidos")+
+      chip(hrisk,"riesgos altos abiertos");
+  }
+  function chip(v,l){ return '<span class="chip"><b>'+v+'</b> '+l+'</span>'; }
+
+  function renderHealth(){
+    var h=$("#health"); h.innerHTML="";
+    S.projects.forEach(function(p){
+      var pct=projPct(p);
+      var next=null;
+      p.milestones.forEach(function(m){ if(!m.done && !next) next=m; });
+      var el=document.createElement("div");
+      el.className="hcard"+(S.focus===p.id?" active":"");
+      el.setAttribute("data-action","pick"); el.setAttribute("data-id",p.id);
+      el.innerHTML=
+        '<div class="hhead"><span class="dot" style="background:'+p.color+'"></span>'+
+          '<span class="pname">'+esc(p.name)+'</span></div>'+
+        '<p class="lead">'+esc(p.lead)+'</p>'+
+        '<span class="rag '+p.rag+'">● '+RAGLABEL[p.rag]+'</span>'+
+        '<div class="progress"><i style="width:'+pct+'%;background:'+p.color+'"></i></div>'+
+        '<div class="prow"><span>Avance de OKRs</span><span class="pval">'+pct+'%</span></div>'+
+        '<div class="next"><span>Próximo hito:</span> '+(next?esc(next.title)+' · '+fmtDate(next.date):'todos cumplidos 🎉')+'</div>';
+      h.appendChild(el);
+    });
+  }
+
+  function renderFilters(){
+    var f=$("#filters"); 
+    var html='<button class="fchip'+(S.filter==="all"?" on":"")+'" data-action="filter" data-filter="all">Todas</button>';
+    S.projects.forEach(function(p){
+      html+='<button class="fchip'+(S.filter===p.id?" on":"")+'" data-action="filter" data-filter="'+p.id+'">'+
+            '<span class="fdot" style="background:'+p.color+'"></span>'+esc(shortName(p))+'</button>';
+    });
+    f.innerHTML=html;
+  }
+  function shortName(p){ return p.name.length>26? p.name.slice(0,24)+"…" : p.name; }
+
+  function renderBoard(){
+    var b=$("#board"); b.innerHTML="";
+    S.etapas.forEach(function(stage){
+      var list=S.tasks.filter(function(x){ return x.stage===stage && (S.filter==="all"||x.pid===S.filter); });
+      var col=document.createElement("div");
+      col.className="col"; col.setAttribute("data-stage",stage);
+      var inner='<div class="colhead"><h3>'+esc(stage)+'</h3><span class="count">'+list.length+'</span></div>';
+      list.forEach(function(x){
+        var p=proj(x.pid);
+        inner+='<div class="task" draggable="true" data-id="'+x.id+'">'+
+          '<div class="tt"><span class="tdot" style="background:'+p.color+'"></span>'+
+            '<span class="ttitle">'+esc(x.title)+'</span></div>'+
+          '<div class="meta"><span class="who">'+esc(x.owner||"—")+' · '+fmtDate(x.due)+'</span>'+
+            '<span class="acts">'+
+              '<button class="icbtn" data-action="move" data-dir="-1" data-id="'+x.id+'" title="Etapa anterior">‹</button>'+
+              '<button class="icbtn" data-action="move" data-dir="1" data-id="'+x.id+'" title="Etapa siguiente">›</button>'+
+              '<button class="icbtn" data-action="edit-task" data-id="'+x.id+'" title="Editar">✎</button>'+
+              '<button class="icbtn" data-action="del-task" data-id="'+x.id+'" title="Eliminar">✕</button>'+
+            '</span></div>'+
+        '</div>';
+      });
+      inner+='<button class="addtask" data-action="add-task" data-stage="'+esc(stage)+'">+ tarea</button>';
+      col.innerHTML=inner;
+      b.appendChild(col);
+    });
+  }
+
+  function renderDetail(){
+    var p=focusP();
+    $("#dtitle").textContent="Detalle · "+p.name;
+    // focus selector
+    var sel=$("#focussel"); sel.innerHTML="";
+    S.projects.forEach(function(pp){ var o=document.createElement("option"); o.value=pp.id; o.textContent=pp.name; if(pp.id===p.id)o.selected=true; sel.appendChild(o); });
+    $("#objective").value=p.objective||"";
+    $("#pname").value=p.name||"";
+    $("#plead").value=p.lead||"";
+    $("#prag").value=p.rag;
+
+    // OKRs
+    var o=$("#okrlist"); o.innerHTML="";
+    p.okrs.forEach(function(k,i){
+      var pct=okrPct(k);
+      var row=document.createElement("div"); row.className="row";
+      row.innerHTML=
+        '<div class="kr">'+
+          '<input class="krname" data-k="okr" data-idx="'+i+'" data-field="kr" value="'+esc(k.kr)+'">'+
+          '<button class="del" data-action="del-okr" data-idx="'+i+'" title="Eliminar">🗑</button>'+
+        '</div>'+
+        '<div class="nums">'+
+          '<input type="number" data-k="okr" data-idx="'+i+'" data-field="current" value="'+esc(k.current)+'">'+
+          '<span class="u">/</span>'+
+          '<input type="number" data-k="okr" data-idx="'+i+'" data-field="target" value="'+esc(k.target)+'">'+
+          '<input class="u" style="width:70px" data-k="okr" data-idx="'+i+'" data-field="unit" value="'+esc(k.unit)+'">'+
+          '<span class="pval" style="margin-left:auto">'+pct+'%</span>'+
+        '</div>'+
+        '<div class="barmini"><i style="width:'+pct+'%;background:'+p.color+'"></i></div>';
+      o.appendChild(row);
+    });
+
+    // Hitos
+    var h=$("#hitolist"); h.innerHTML="";
+    p.milestones.forEach(function(m,i){
+      var row=document.createElement("div"); row.className="hito"+(m.done?" done":"");
+      row.innerHTML=
+        '<input type="checkbox" data-k="hito" data-idx="'+i+'" data-field="done" '+(m.done?"checked":"")+'>'+
+        '<input class="hname" data-k="hito" data-idx="'+i+'" data-field="title" value="'+esc(m.title)+'">'+
+        '<input type="date" data-k="hito" data-idx="'+i+'" data-field="date" value="'+esc(m.date)+'">'+
+        '<button class="del" data-action="del-hito" data-idx="'+i+'" title="Eliminar">🗑</button>';
+      h.appendChild(row);
+    });
+
+    // Riesgos
+    var r=$("#risklist"); r.innerHTML="";
+    p.risks.forEach(function(rk,i){
+      var row=document.createElement("div"); row.className="risk";
+      row.innerHTML=
+        '<div class="rtop">'+
+          '<input data-k="risk" data-idx="'+i+'" data-field="title" value="'+esc(rk.title)+'">'+
+          '<span class="sev '+rk.sev+'">'+rk.sev.toUpperCase()+'</span>'+
+          '<button class="del" data-action="del-risk" data-idx="'+i+'" title="Eliminar">🗑</button>'+
+        '</div>'+
+        '<div class="rbot" style="margin-bottom:7px">'+
+          '<select data-k="risk" data-idx="'+i+'" data-field="sev">'+opt(["alto","medio","bajo"],rk.sev)+'</select>'+
+          '<select data-k="risk" data-idx="'+i+'" data-field="estado">'+opt(["Abierto","En manejo","Cerrado"],rk.estado)+'</select>'+
+        '</div>'+
+        '<input data-k="risk" data-idx="'+i+'" data-field="mit" placeholder="Plan de mitigación" value="'+esc(rk.mit)+'">';
+      r.appendChild(row);
+    });
+  }
+  function opt(arr,val){ return arr.map(function(a){return '<option'+(a===val?' selected':'')+'>'+a+'</option>';}).join(""); }
+
+  // ---------- events: click (delegated) ----------
+  document.addEventListener("click", function(e){
+    var el=e.target.closest("[data-action]"); if(!el) return;
+    var a=el.getAttribute("data-action");
+    if(a==="pick"){ S.focus=el.getAttribute("data-id"); S.filter=S.focus; save(); render(); }
+    else if(a==="filter"){ var f=el.getAttribute("data-filter"); S.filter=f; if(f!=="all"){S.focus=f;} save(); render(); }
+    else if(a==="focus"){ /* handled by change */ }
+    else if(a==="move"){ moveTask(el.getAttribute("data-id"), parseInt(el.getAttribute("data-dir"),10)); }
+    else if(a==="edit-task"){ openTask(el.getAttribute("data-id")); }
+    else if(a==="del-task"){ delTask(el.getAttribute("data-id")); }
+    else if(a==="add-task"){ openTask(null, el.getAttribute("data-stage")); }
+    else if(a==="save-task"){ saveTask(); }
+    else if(a==="cancel-task"){ closeModal(); }
+    else if(a==="add-okr"){ focusP().okrs.push({kr:"Nuevo resultado clave", current:0, target:100, unit:""}); save(); renderDetail(); renderHealth(); }
+    else if(a==="del-okr"){ focusP().okrs.splice(+el.getAttribute("data-idx"),1); save(); renderDetail(); renderHealth(); }
+    else if(a==="add-hito"){ focusP().milestones.push({title:"Nuevo hito", date:"", done:false}); save(); renderDetail(); renderHealth(); renderSummary(); }
+    else if(a==="del-hito"){ focusP().milestones.splice(+el.getAttribute("data-idx"),1); save(); renderDetail(); renderHealth(); renderSummary(); }
+    else if(a==="add-risk"){ focusP().risks.push({title:"Nuevo riesgo", sev:"medio", estado:"Abierto", mit:""}); save(); renderDetail(); renderSummary(); }
+    else if(a==="del-risk"){ focusP().risks.splice(+el.getAttribute("data-idx"),1); save(); renderDetail(); renderSummary(); }
+    else if(a==="export"){ doExport(); }
+    else if(a==="import"){ $("#fileimp").click(); }
+    else if(a==="reset"){ if(confirm("¿Restaurar los 3 ejemplos originales? Se perderán tus cambios en este navegador.")){ S=seed(); save(); render(); toast("Ejemplos restaurados"); } }
+  });
+
+  // ---------- events: change (delegated) ----------
+  document.addEventListener("change", function(e){
+    var el=e.target; var k=el.getAttribute("data-k");
+    if(el.id==="focussel"){ S.focus=el.value; save(); renderDetail(); renderHealth(); return; }
+    if(!k) return;
+    var p=focusP();
+    if(k==="proj"){ 
+      var f=el.getAttribute("data-field"); p[f]=el.value; save();
+      if(f==="name"||f==="rag"){ renderHealth(); renderFilters(); renderBoard(); if(f==="name")$("#dtitle").textContent="Detalle · "+p.name; }
+    } else if(k==="okr"){
+      var oi=+el.getAttribute("data-idx"), of=el.getAttribute("data-field");
+      p.okrs[oi][of] = (of==="current"||of==="target")? (parseFloat(el.value)||0) : el.value;
+      save(); renderDetail(); renderHealth();
+    } else if(k==="hito"){
+      var hi=+el.getAttribute("data-idx"), hf=el.getAttribute("data-field");
+      p.milestones[hi][hf] = hf==="done"? el.checked : el.value;
+      save(); renderDetail(); renderHealth(); renderSummary();
+    } else if(k==="risk"){
+      var ri=+el.getAttribute("data-idx"), rf=el.getAttribute("data-field");
+      p.risks[ri][rf]=el.value; save(); renderDetail(); renderSummary();
+    }
+  });
+
+  function moveTask(id,dir){
+    var x=S.tasks.filter(function(z){return z.id===id;})[0]; if(!x) return;
+    var i=S.etapas.indexOf(x.stage)+dir;
+    if(i<0||i>=S.etapas.length) return;
+    x.stage=S.etapas[i]; save(); renderBoard(); renderSummary();
+  }
+  function delTask(id){
+    S.tasks=S.tasks.filter(function(z){return z.id!==id;}); save(); renderBoard(); renderSummary();
+  }
+
+  // ---------- modal ----------
+  var editingId=null;
+  function fillModalSelectors(){
+    var ps=$("#m_proj"); ps.innerHTML="";
+    S.projects.forEach(function(p){ var o=document.createElement("option"); o.value=p.id; o.textContent=p.name; ps.appendChild(o); });
+    var ss=$("#m_stage"); ss.innerHTML="";
+    S.etapas.forEach(function(s){ var o=document.createElement("option"); o.value=s; o.textContent=s; ss.appendChild(o); });
+  }
+  function openTask(id, stage){
+    fillModalSelectors(); editingId=id;
+    if(id){
+      var x=S.tasks.filter(function(z){return z.id===id;})[0];
+      $("#mtitle").textContent="Editar tarea";
+      $("#m_title").value=x.title; $("#m_proj").value=x.pid; $("#m_owner").value=x.owner||"";
+      $("#m_due").value=x.due||""; $("#m_stage").value=x.stage;
+    } else {
+      $("#mtitle").textContent="Nueva tarea";
+      $("#m_title").value=""; $("#m_proj").value=(S.filter!=="all"?S.filter:S.focus);
+      $("#m_owner").value=""; $("#m_due").value=""; $("#m_stage").value=stage||S.etapas[0];
+    }
+    $("#overlay").classList.add("show"); setTimeout(function(){$("#m_title").focus();},50);
+  }
+  function closeModal(){ $("#overlay").classList.remove("show"); editingId=null; }
+  function saveTask(){
+    var title=$("#m_title").value.trim(); if(!title){ $("#m_title").focus(); return; }
+    var data={title:title, pid:$("#m_proj").value, owner:$("#m_owner").value.trim(), due:$("#m_due").value, stage:$("#m_stage").value};
+    if(editingId){ var x=S.tasks.filter(function(z){return z.id===editingId;})[0]; Object.assign(x,data); }
+    else { data.id=t(); S.tasks.push(data); }
+    save(); closeModal(); renderBoard(); renderSummary(); toast(editingId?"Tarea actualizada":"Tarea añadida");
+  }
+  $("#overlay").addEventListener("click", function(e){ if(e.target===this) closeModal(); });
+  document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeModal(); });
+
+  // ---------- drag & drop ----------
+  var board=$("#board");
+  board.addEventListener("dragstart", function(e){ var t2=e.target.closest(".task"); if(!t2) return; t2.classList.add("dragging"); e.dataTransfer.setData("text/plain", t2.getAttribute("data-id")); e.dataTransfer.effectAllowed="move"; });
+  board.addEventListener("dragend", function(e){ var t2=e.target.closest(".task"); if(t2) t2.classList.remove("dragging"); document.querySelectorAll(".col.drop").forEach(function(c){c.classList.remove("drop");}); });
+  board.addEventListener("dragover", function(e){ var c=e.target.closest(".col"); if(!c) return; e.preventDefault(); c.classList.add("drop"); });
+  board.addEventListener("dragleave", function(e){ var c=e.target.closest(".col"); if(c && !c.contains(e.relatedTarget)) c.classList.remove("drop"); });
+  board.addEventListener("drop", function(e){ var c=e.target.closest(".col"); if(!c) return; e.preventDefault(); c.classList.remove("drop");
+    var id=e.dataTransfer.getData("text/plain"); var x=S.tasks.filter(function(z){return z.id===id;})[0];
+    if(x){ x.stage=c.getAttribute("data-stage"); save(); renderBoard(); renderSummary(); }
+  });
+
+  // ---------- export / import ----------
+  function doExport(){
+    var blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+    var url=URL.createObjectURL(blob); var a=document.createElement("a");
+    a.href=url; a.download="cockpit-estrategia-experian.json"; a.click(); URL.revokeObjectURL(url);
+    toast("Tablero exportado");
+  }
+  $("#fileimp").addEventListener("change", function(e){
+    var f=e.target.files[0]; if(!f) return; var rd=new FileReader();
+    rd.onload=function(){ try{ var d=JSON.parse(rd.result); if(!d.projects||!d.tasks) throw 0; S=d; if(!S.etapas)S.etapas=ETAPAS.slice(); save(); render(); toast("Tablero importado"); }
+      catch(err){ toast("Archivo no válido"); } };
+    rd.readAsText(f); e.target.value="";
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
