@@ -1,0 +1,523 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brújula STEAM · Autodiagnóstico y plan de 30 días</title>
+<style>
+  :root{
+    --deep:#1C0730;
+    --deep-2:#2B0B3F;
+    --card:#3A1355;
+    --card-2:#4A1C68;
+    --violet:#9D4EDD;
+    --magenta:#E6007E;
+    --lila:#C9B6DA;
+    --light:#F6F1FA;
+    --white:#FFFFFF;
+    --ok:#2ED8A7;
+    --serif:Georgia,'Iowan Old Style','Times New Roman',serif;
+    --sans:'Segoe UI',Roboto,-apple-system,'Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--deep);color:var(--light);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px}
+  header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;border-bottom:1px solid rgba(201,182,218,.22);padding-bottom:18px;margin-bottom:26px}
+  .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--magenta);font-weight:700;margin:0 0 6px}
+  h1{font-family:var(--serif);font-size:clamp(28px,4.4vw,44px);line-height:1.08;margin:0;color:var(--white);font-weight:700}
+  .sub{color:var(--lila);font-size:15px;margin:8px 0 0;max-width:56ch}
+  nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:26px}
+  nav.tabs button{background:transparent;border:1px solid rgba(201,182,218,.3);color:var(--lila);padding:9px 16px;border-radius:999px;font-size:13.5px;font-family:inherit;cursor:pointer;transition:.15s}
+  nav.tabs button:hover{border-color:var(--violet);color:var(--white)}
+  nav.tabs button[aria-selected="true"]{background:var(--magenta);border-color:var(--magenta);color:#fff;font-weight:600}
+  nav.tabs button:disabled{opacity:.35;cursor:not-allowed}
+  section.panel{display:none}
+  section.panel.on{display:block;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .card{background:var(--deep-2);border:1px solid rgba(201,182,218,.16);border-radius:16px;padding:22px}
+  .card+.card{margin-top:16px}
+  h2{font-family:var(--serif);font-size:24px;margin:0 0 4px;color:var(--white)}
+  h3{font-size:15px;margin:0 0 10px;color:var(--white)}
+  .muted{color:var(--lila);font-size:13.5px}
+  label.field{display:block;margin-bottom:14px}
+  label.field span{display:block;font-size:13px;color:var(--lila);margin-bottom:6px}
+  input[type=text]{width:100%;max-width:360px;background:var(--card);border:1px solid rgba(201,182,218,.28);color:var(--white);padding:10px 12px;border-radius:10px;font-family:inherit;font-size:14px}
+  input[type=text]:focus,button:focus-visible,.opt:focus-within{outline:2px solid var(--violet);outline-offset:2px}
+  .btn{background:var(--magenta);color:#fff;border:0;border-radius:999px;padding:12px 26px;font-size:14.5px;font-weight:600;font-family:inherit;cursor:pointer}
+  .btn:hover{filter:brightness(1.1)}
+  .btn.ghost{background:transparent;border:1px solid rgba(201,182,218,.4);color:var(--lila)}
+  .btn.small{padding:8px 16px;font-size:13px}
+  .qblock{border-top:1px solid rgba(201,182,218,.14);padding:18px 0}
+  .qblock:first-of-type{border-top:0}
+  .dimtag{display:inline-block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--violet);font-weight:700;margin-bottom:6px}
+  .qtext{font-size:15.5px;color:var(--white);margin:0 0 12px}
+  .scale{display:flex;gap:8px;flex-wrap:wrap}
+  .opt{position:relative}
+  .opt input{position:absolute;opacity:0;inset:0;cursor:pointer}
+  .opt span{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--card);border:1px solid rgba(201,182,218,.22);font-size:14px;color:var(--lila);cursor:pointer;transition:.15s}
+  .opt input:checked+span{background:var(--violet);border-color:var(--violet);color:#fff;font-weight:700}
+  .scalekey{font-size:12px;color:var(--lila);margin-top:8px}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+  .stat{background:var(--card);border-radius:14px;padding:16px}
+  .stat b{display:block;font-family:var(--serif);font-size:34px;color:var(--white);line-height:1.1}
+  .stat small{display:block;font-size:12px;color:var(--lila);margin-top:4px}
+  .bar{height:8px;background:rgba(201,182,218,.18);border-radius:99px;overflow:hidden;margin-top:8px}
+  .bar i{display:block;height:100%;background:var(--magenta);border-radius:99px;transition:width .5s}
+  .dimrow{margin-bottom:14px}
+  .dimrow .top{display:flex;justify-content:space-between;font-size:13.5px}
+  .task{display:flex;gap:12px;align-items:flex-start;background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:10px;transition:.2s}
+  .task.done{opacity:.55}
+  .task.done .tname{text-decoration:line-through}
+  .task input[type=checkbox]{width:20px;height:20px;accent-color:var(--ok);margin-top:2px;flex:none;cursor:pointer}
+  .tname{font-size:14.5px;color:var(--white);font-weight:600;margin:0}
+  .thow{font-size:13px;color:var(--lila);margin:5px 0 0}
+  .meta{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--violet);font-weight:700;margin-top:7px;display:block}
+  .weekhead{display:flex;justify-content:space-between;align-items:baseline;margin:26px 0 12px}
+  .weekhead h3{font-family:var(--serif);font-size:19px;margin:0}
+  .empty{text-align:center;padding:50px 20px;color:var(--lila)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid rgba(201,182,218,.14)}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--violet)}
+  .pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:600}
+  .pill.ok{background:rgba(46,216,167,.16);color:var(--ok)}
+  .pill.warn{background:rgba(230,0,126,.18);color:#FF6FB5}
+  .foot{margin-top:34px;font-size:12px;color:rgba(201,182,218,.6);text-align:center}
+  .rowbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .save{font-size:12px;color:var(--ok);opacity:0;transition:.3s}
+  .save.on{opacity:1}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Women in AI Colombia · Taller Liderazgo Aumentado</p>
+      <h1>Brújula STEAM</h1>
+      <p class="sub">Mide dónde estás hoy, recibe un plan de 30 días paso a paso y sigue tu avance con métricas reales.</p>
+    </div>
+    <span class="save" id="saveFlag">Guardado</span>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="diag" aria-selected="true">1 · Autodiagnóstico</button>
+    <button role="tab" data-tab="res" aria-selected="false" id="tabRes" disabled>2 · Resultados</button>
+    <button role="tab" data-tab="plan" aria-selected="false" id="tabPlan" disabled>3 · Plan de 30 días</button>
+    <button role="tab" data-tab="met" aria-selected="false" id="tabMet" disabled>4 · Métricas</button>
+  </nav>
+
+  <!-- ============ DIAGNÓSTICO ============ -->
+  <section class="panel on" id="p-diag">
+    <div class="card">
+      <h2>Cuéntanos quién eres</h2>
+      <p class="muted">Solo se usa para personalizar tu plan y tu reporte.</p>
+      <div style="margin-top:16px">
+        <label class="field"><span>Nombre</span><input type="text" id="fName" placeholder="Ej. Ana María"></label>
+        <label class="field"><span>Rol y sector</span><input type="text" id="fRole" placeholder="Ej. Ingeniera de datos · Energía"></label>
+        <label class="field"><span>Tema en el que quieres ser referente</span><input type="text" id="fTopic" placeholder="Ej. IA aplicada a mantenimiento predictivo"></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>20 preguntas, 5 dimensiones</h2>
+      <p class="muted">Responde con lo que haces hoy, no con lo que te gustaría hacer. 1 = nunca · 5 = siempre.</p>
+      <div id="questions"></div>
+      <div class="rowbtns">
+        <button class="btn" id="btnCalc">Ver mis resultados</button>
+        <button class="btn ghost small" id="btnReset">Empezar de nuevo</button>
+      </div>
+      <p class="muted" id="progressNote" style="margin-top:12px"></p>
+    </div>
+  </section>
+
+  <!-- ============ RESULTADOS ============ -->
+  <section class="panel" id="p-res">
+    <div class="card">
+      <h2 id="resTitle">Tu índice de Liderazgo Aumentado</h2>
+      <p class="muted" id="resLead"></p>
+      <div class="grid g2" style="margin-top:18px;align-items:center">
+        <div id="radarBox"></div>
+        <div id="dimBars"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Tus dos palancas prioritarias</h3>
+      <p class="muted">Tu plan de 30 días concentra el esfuerzo aquí, sin abandonar el resto.</p>
+      <div class="grid g2" id="levers" style="margin-top:14px"></div>
+      <div class="rowbtns"><button class="btn" id="btnPlan">Generar mi plan de 30 días</button></div>
+    </div>
+  </section>
+
+  <!-- ============ PLAN ============ -->
+  <section class="panel" id="p-plan">
+    <div class="card">
+      <h2>Plan de 30 días</h2>
+      <p class="muted" id="planLead"></p>
+      <div class="grid g3" style="margin-top:16px">
+        <div class="stat"><b id="sDone">0%</b><small>Avance total</small><div class="bar"><i id="barDone" style="width:0%"></i></div></div>
+        <div class="stat"><b id="sDay">Día 1</b><small id="sDayNote">de 30</small></div>
+        <div class="stat"><b id="sPace">—</b><small>Ritmo vs. esperado</small></div>
+      </div>
+    </div>
+    <div id="planBody"></div>
+    <div class="rowbtns">
+      <button class="btn ghost small" id="btnExport">Descargar mi plan (CSV)</button>
+      <button class="btn ghost small" id="btnRestart">Reiniciar los 30 días</button>
+    </div>
+  </section>
+
+  <!-- ============ MÉTRICAS ============ -->
+  <section class="panel" id="p-met">
+    <div class="card">
+      <h2>Métricas de tu proceso</h2>
+      <p class="muted">Lo que no se mide, no sostiene la permanencia. Revisa esto cada viernes.</p>
+      <div class="grid g3" style="margin-top:16px" id="metCards"></div>
+    </div>
+    <div class="card">
+      <h3>Avance por dimensión</h3>
+      <div id="metDims"></div>
+    </div>
+    <div class="card">
+      <h3>Bitácora semanal</h3>
+      <table id="metTable"><thead><tr><th>Semana</th><th>Foco</th><th>Acciones</th><th>Completadas</th><th>Estado</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="card">
+      <h3>Re-diagnóstico del día 30</h3>
+      <p class="muted">Al terminar el ciclo, vuelve a responder las 20 preguntas para medir tu cambio real.</p>
+      <div id="reDiag"></div>
+      <div class="rowbtns"><button class="btn small" id="btnRe">Hacer el re-diagnóstico</button></div>
+    </div>
+  </section>
+
+  <p class="foot">Brújula STEAM · herramienta del taller Liderazgo Aumentado. Tus respuestas se guardan solo en tu sesión.</p>
+</div>
+
+<script>
+/* ---------------- almacenamiento ---------------- */
+const mem = {};
+const store = {
+  async get(k){
+    try{ const r = await window.storage.get(k); return r ? JSON.parse(r.value) : null; }
+    catch(e){ return mem[k] !== undefined ? mem[k] : null; }
+  },
+  async set(k,v){
+    mem[k]=v;
+    try{ await window.storage.set(k, JSON.stringify(v)); }catch(e){}
+  }
+};
+const KEY='brujula:v1';
+
+/* ---------------- modelo ---------------- */
+const DIMS = [
+  {id:'mind', name:'Mindset y confianza',  short:'Mindset'},
+  {id:'marca',name:'Marca personal',       short:'Marca'},
+  {id:'ia',   name:'Fluidez en IA',        short:'IA'},
+  {id:'red',  name:'Red y patrocinio',     short:'Red'},
+  {id:'evi',  name:'Evidencia e impacto',  short:'Evidencia'}
+];
+
+const QUESTIONS = [
+  ['mind','Hablo de mis logros sin minimizarlos ni justificarlos.'],
+  ['mind','Cuando no sé algo técnico, lo digo y lo aprendo sin sentir que pierdo autoridad.'],
+  ['mind','Me postulo a oportunidades aunque no cumpla el 100% de los requisitos.'],
+  ['mind','Tomo la palabra en reuniones donde soy la única mujer o la más junior.'],
+  ['marca','Puedo explicar en una frase el tema en el que quiero ser referente.'],
+  ['marca','Mi perfil profesional en línea refleja lo que hago hoy y hacia dónde voy.'],
+  ['marca','Comparto públicamente aprendizajes o casos de mi trabajo al menos una vez al mes.'],
+  ['marca','Tengo un pitch de 30 segundos listo y lo uso cuando aparece la oportunidad.'],
+  ['ia','Uso herramientas de IA en mi trabajo al menos tres veces por semana.'],
+  ['ia','Sé escribir instrucciones estructuradas (rol, contexto, tarea, formato) y no solo preguntas sueltas.'],
+  ['ia','He automatizado al menos una tarea repetitiva de mi rol.'],
+  ['ia','Sé qué información no debo subir a una herramienta de IA y por qué.'],
+  ['red','Tengo al menos tres personas que hablan bien de mí cuando no estoy en la sala.'],
+  ['red','Converso con mujeres de mi campo fuera de mi organización de forma regular.'],
+  ['red','Pido apoyo, referencias o retroalimentación sin sentir que estoy molestando.'],
+  ['red','Presento o conecto a otras mujeres con oportunidades de forma activa.'],
+  ['evi','Registro los resultados de mi trabajo con métricas, no solo con descripciones.'],
+  ['evi','He presentado una propuesta o piloto a alguien con poder de decisión en el último año.'],
+  ['evi','Puedo mostrar un caso propio con antes y después en menos de cinco minutos.'],
+  ['evi','Traduzco lo técnico a lenguaje de negocio cuando hablo con dirección.']
+];
+
+/* banco de acciones: cada una con semana sugerida y cómo hacerla */
+const BANK = {
+  mind:[
+    {w:1,t:'Inventario de logros con evidencia',h:'Lista 7 logros de los últimos 2 años. A cada uno agrégale una cifra, una fecha y quién se benefició. Usa la IA para redactarlos en primera persona sin lenguaje que reste valor.'},
+    {w:1,t:'Caza de frases que te restan',h:'Revisa tus últimos 20 mensajes de trabajo y marca los "solo", "creo que quizás", "perdón por". Reescríbelos en afirmativo. Repite el ejercicio el día 15.'},
+    {w:2,t:'Habla primero una vez',h:'En una reunión de esta semana, sé la primera en dar una opinión técnica. Prepara la frase antes de entrar.'},
+    {w:3,t:'Postúlate al 60%',h:'Elige una convocatoria, panel, beca o vacante donde cumplas alrededor del 60% de los requisitos y postúlate antes del viernes.'},
+    {w:4,t:'Carta de tu yo del día 30',h:'Escribe media página sobre lo que aprendiste de ti en este ciclo y qué creencia ya no te aplica. Guárdala.'}
+  ],
+  marca:[
+    {w:1,t:'Define tu posición en una frase',h:'Completa: "Ayudo a [quién] a [resultado] usando [tu expertise + IA]". Pruébala con dos colegas y ajústala hasta que la repitan sin error.'},
+    {w:1,t:'Actualiza tu titular y tu resumen',h:'Cambia el titular de tu perfil profesional por tu posición. Reescribe el resumen en 4 párrafos: qué haces, para quién, prueba con datos, qué buscas.'},
+    {w:2,t:'Publica tu primer caso',h:'Formato: problema en 1 línea, qué hiciste en 3 pasos, resultado con métrica, aprendizaje. Máximo 200 palabras. Publica martes o miércoles en la mañana.'},
+    {w:3,t:'Publicación 2: enseña algo',h:'Comparte una herramienta o instrucción de IA que te sirvió, con el paso a paso para que otra persona lo replique.'},
+    {w:4,t:'Ofrece una charla corta',h:'Propón un espacio de 20 minutos en tu empresa, comunidad o red para contar tu caso. Agenda la fecha, aunque sea del mes siguiente.'}
+  ],
+  ia:[
+    {w:1,t:'Mapa de tus tareas repetitivas',h:'Anota durante 3 días todo lo que haces más de dos veces por semana. Marca las 3 que más tiempo te consumen y estima las horas mensuales.'},
+    {w:1,t:'Elige dos herramientas, no seis',h:'Una para pensar y redactar, otra para tu frente crítico (datos, reuniones o diseño). Crea las cuentas y déjalas ancladas en tu navegador.'},
+    {w:2,t:'Automatiza tu tarea número uno',h:'Toma la tarea más costosa del mapa y construye una instrucción reutilizable con rol, contexto, tarea, formato y criterio de calidad. Guárdala como plantilla.'},
+    {w:2,t:'Mide el ahorro',h:'Cronometra la tarea antes y después. Registra minutos ahorrados por semana: es la cifra que llevarás a dirección.'},
+    {w:3,t:'Biblioteca de instrucciones',h:'Reúne tus 5 mejores instrucciones en un documento con nombre, para qué sirve y ejemplo de salida. Compártela con tu equipo.'},
+    {w:3,t:'Define tus reglas de datos',h:'Escribe qué información nunca subirás a una herramienta de IA y qué cuenta usarás para trabajo. Confirma la política de tu organización.'}
+  ],
+  red:[
+    {w:1,t:'Mapa de tu red actual',h:'Lista 10 personas por categoría: quién te abre puertas, quién te da retroalimentación honesta y quién aprende de ti. Detecta la categoría vacía.'},
+    {w:2,t:'Dos cafés con mujeres del taller',h:'Agenda 25 minutos con dos participantes. Guion: en qué trabajas, qué estás probando con IA, en qué te puedo ayudar.'},
+    {w:2,t:'Reactiva tres contactos',h:'Escribe a tres personas con las que perdiste contacto. Mensaje corto, sin pedir nada: comparte algo útil para ellas.'},
+    {w:3,t:'Pide una recomendación concreta',h:'Solicita a alguien que trabajó contigo una recomendación escrita sobre un proyecto específico y su resultado.'},
+    {w:4,t:'Conecta a otras dos mujeres',h:'Presenta a dos personas de tu red que deberían conocerse y explica por qué. El patrocinio se practica dándolo.'}
+  ],
+  evi:[
+    {w:1,t:'Tablero de tus métricas',h:'Crea una hoja con: proyecto, problema, acción, métrica antes, métrica después, fecha. Llénala con lo que ya hiciste este año.'},
+    {w:2,t:'Diseña un piloto de bajo riesgo',h:'Elige un proceso pequeño y define alcance, herramienta, 4 pasos, riesgos y métrica de éxito. Que quepa en una diapositiva.'},
+    {w:3,t:'Presenta el piloto',h:'Agenda 15 minutos con quien decide. Estructura: costo actual del problema, propuesta, prueba que ya hiciste, qué necesitas.'},
+    {w:4,t:'Documenta el caso completo',h:'Escribe el caso en una página: contexto, solución, resultados con cifras, aprendizajes. Es tu material para entrevistas, charlas y publicaciones.'},
+    {w:4,t:'Traduce a lenguaje de negocio',h:'Reescribe tu caso quitando toda jerga técnica. Si tu familia lo entiende, dirección también.'}
+  ]
+};
+
+let S = null; // estado
+
+function newState(){
+  return {name:'',role:'',topic:'',answers:{},score:null,plan:null,start:null,re:null};
+}
+
+/* ---------------- render preguntas ---------------- */
+function renderQuestions(){
+  const box=document.getElementById('questions');
+  box.innerHTML = QUESTIONS.map((q,i)=>{
+    const dim = DIMS.find(d=>d.id===q[0]).name;
+    const opts=[1,2,3,4,5].map(v=>`<label class="opt"><input type="radio" name="q${i}" value="${v}" ${S.answers[i]==v?'checked':''}><span>${v}</span></label>`).join('');
+    return `<div class="qblock"><span class="dimtag">${dim}</span><p class="qtext">${i+1}. ${q[1]}</p><div class="scale">${opts}</div></div>`;
+  }).join('') + `<p class="scalekey">1 nunca · 2 rara vez · 3 a veces · 4 casi siempre · 5 siempre</p>`;
+  box.addEventListener('change',e=>{
+    if(e.target.name && e.target.name.startsWith('q')){
+      S.answers[+e.target.name.slice(1)] = +e.target.value;
+      save(); updateProgressNote();
+    }
+  });
+  updateProgressNote();
+}
+function updateProgressNote(){
+  const n=Object.keys(S.answers).length;
+  document.getElementById('progressNote').textContent = n+' de 20 respondidas.'+(n<20?' Faltan '+(20-n)+'.':' Listo para calcular.');
+}
+
+/* ---------------- cálculo ---------------- */
+function computeScore(ans){
+  const per={};
+  DIMS.forEach(d=>{
+    const idx=QUESTIONS.map((q,i)=>q[0]===d.id?i:-1).filter(i=>i>=0);
+    const sum=idx.reduce((a,i)=>a+(ans[i]||0),0);
+    per[d.id]=Math.round(sum/idx.length/5*100);
+  });
+  const total=Math.round(DIMS.reduce((a,d)=>a+per[d.id],0)/DIMS.length);
+  return {per,total};
+}
+
+/* ---------------- radar (SVG) ---------------- */
+function radar(per, per2){
+  const cx=170,cy=160,R=112, n=DIMS.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return [cx+r*Math.cos(a), cy+r*Math.sin(a)];};
+  let g='';
+  [0.25,0.5,0.75,1].forEach(f=>{
+    const p=DIMS.map((_,i)=>pt(i,R*f).join(',')).join(' ');
+    g+=`<polygon points="${p}" fill="none" stroke="rgba(201,182,218,.2)" stroke-width="1"/>`;
+  });
+  DIMS.forEach((_,i)=>{const [x,y]=pt(i,R);g+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(201,182,218,.2)"/>`;});
+  if(per2){
+    const p2=DIMS.map((d,i)=>pt(i,R*per2[d.id]/100).join(',')).join(' ');
+    g+=`<polygon points="${p2}" fill="rgba(157,78,221,.28)" stroke="#9D4EDD" stroke-width="2" stroke-dasharray="4 3"/>`;
+  }
+  const p=DIMS.map((d,i)=>pt(i,R*per[d.id]/100).join(',')).join(' ');
+  g+=`<polygon points="${p}" fill="rgba(230,0,126,.30)" stroke="#E6007E" stroke-width="2.5"/>`;
+  DIMS.forEach((d,i)=>{
+    const [x,y]=pt(i,R+26);
+    g+=`<text x="${x}" y="${y}" fill="#C9B6DA" font-size="11.5" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Arial">${d.short}</text>`;
+  });
+  return `<svg viewBox="0 0 340 330" width="100%" style="max-width:340px" role="img" aria-label="Perfil por dimensión">${g}</svg>`;
+}
+
+/* ---------------- resultados ---------------- */
+function showResults(){
+  const sc=S.score;
+  const nivel = sc.total>=80?'Consolidada':sc.total>=60?'En expansión':sc.total>=40?'En construcción':'En despegue';
+  document.getElementById('resTitle').textContent = (S.name? S.name+', ':'')+'tu índice es '+sc.total+'/100 · '+nivel;
+  document.getElementById('resLead').textContent = 'El índice promedia las cinco dimensiones. No es una calificación: es una línea base para medir tu cambio el día 30.';
+  document.getElementById('radarBox').innerHTML = radar(sc.per, S.re? S.re.per : null);
+  document.getElementById('dimBars').innerHTML = DIMS.map(d=>`
+    <div class="dimrow"><div class="top"><span>${d.name}</span><b>${sc.per[d.id]}</b></div>
+    <div class="bar"><i style="width:${sc.per[d.id]}%"></i></div></div>`).join('');
+  const low=[...DIMS].sort((a,b)=>sc.per[a.id]-sc.per[b.id]).slice(0,2);
+  document.getElementById('levers').innerHTML = low.map(d=>`
+    <div class="stat"><small>Palanca prioritaria</small><b style="font-size:22px;margin-top:6px">${d.name}</b>
+    <small style="margin-top:8px">Puntaje ${sc.per[d.id]}/100 · recibirás más acciones de esta dimensión en tu plan.</small></div>`).join('');
+}
+
+/* ---------------- plan ---------------- */
+function buildPlan(){
+  const sc=S.score;
+  const order=[...DIMS].sort((a,b)=>sc.per[a.id]-sc.per[b.id]);
+  const tasks=[];
+  order.forEach((d,rank)=>{
+    const take = rank<2 ? BANK[d.id].length : (rank<4 ? 3 : 2);
+    BANK[d.id].slice(0,take).forEach(x=>tasks.push({id:d.id+'-'+x.t.slice(0,12), dim:d.id, w:x.w, t:x.t, h:x.h, done:false}));
+  });
+  tasks.sort((a,b)=>a.w-b.w);
+  return tasks;
+}
+const WEEKFOCUS=['Base y claridad','Ahorro real de tiempo','Visibilidad con evidencia','Impacto y comunidad'];
+
+function renderPlan(){
+  const p=S.plan||[];
+  document.getElementById('planLead').textContent =
+    'Tu plan tiene '+p.length+' acciones repartidas en 4 semanas'+(S.topic?', enfocadas en tu tema: '+S.topic:'')+'. Marca cada acción cuando la termines.';
+  let html='';
+  [1,2,3,4].forEach(w=>{
+    const ws=p.filter(t=>t.w===w);
+    const dn=ws.filter(t=>t.done).length;
+    html+=`<div class="weekhead"><h3>Semana ${w} · ${WEEKFOCUS[w-1]}</h3><span class="muted">${dn}/${ws.length} · días ${(w-1)*7+1}–${w*7}</span></div><div class="card">`;
+    html+=ws.map(t=>`<div class="task ${t.done?'done':''}">
+      <input type="checkbox" data-id="${t.id}" ${t.done?'checked':''} aria-label="${t.t}">
+      <div><p class="tname">${t.t}</p><p class="thow">${t.h}</p>
+      <span class="meta">${DIMS.find(d=>d.id===t.dim).name}</span></div></div>`).join('');
+    html+='</div>';
+  });
+  document.getElementById('planBody').innerHTML=html;
+  document.getElementById('planBody').querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change',()=>{
+      const t=S.plan.find(x=>x.id===cb.dataset.id); t.done=cb.checked; save(); renderPlan(); renderMetrics();
+    });
+  });
+  const done=p.filter(t=>t.done).length, pct=p.length?Math.round(done/p.length*100):0;
+  document.getElementById('sDone').textContent=pct+'%';
+  document.getElementById('barDone').style.width=pct+'%';
+  const day=currentDay();
+  document.getElementById('sDay').textContent='Día '+day;
+  document.getElementById('sDayNote').textContent=day>=30?'ciclo completo':'de 30';
+  const esperado=Math.min(100,Math.round(day/30*100));
+  const delta=pct-esperado;
+  document.getElementById('sPace').textContent=(delta>=0?'+':'')+delta+' pts';
+}
+function currentDay(){
+  if(!S.start) return 1;
+  const d=Math.floor((Date.now()-S.start)/86400000)+1;
+  return Math.max(1,Math.min(30,d));
+}
+
+/* ---------------- métricas ---------------- */
+function renderMetrics(){
+  const p=S.plan||[]; if(!p.length) return;
+  const done=p.filter(t=>t.done).length, pct=Math.round(done/p.length*100);
+  const day=currentDay(), esperado=Math.min(100,Math.round(day/30*100));
+  const sem=Math.min(4,Math.ceil(day/7));
+  const semDone=p.filter(t=>t.w===sem&&t.done).length, semTot=p.filter(t=>t.w===sem).length;
+  const cards=[
+    ['Acciones completadas',done+'/'+p.length,'de tu plan'],
+    ['Avance',pct+'%','esperado a hoy: '+esperado+'%'],
+    ['Semana actual',String(sem),semDone+' de '+semTot+' acciones'],
+    ['Días restantes',String(Math.max(0,30-day)),'del ciclo'],
+    ['Adherencia',(esperado?Math.round(pct/esperado*100):0)+'%','avance real sobre lo esperado'],
+    ['Dimensiones activadas',DIMS.filter(d=>p.some(t=>t.dim===d.id&&t.done)).length+'/5','con al menos una acción hecha']
+  ];
+  document.getElementById('metCards').innerHTML=cards.map(c=>`<div class="stat"><b>${c[1]}</b><small>${c[0]}</small><small style="opacity:.75">${c[2]}</small></div>`).join('');
+  document.getElementById('metDims').innerHTML=DIMS.map(d=>{
+    const ts=p.filter(t=>t.dim===d.id), dn=ts.filter(t=>t.done).length;
+    const w=ts.length?Math.round(dn/ts.length*100):0;
+    return `<div class="dimrow"><div class="top"><span>${d.name}</span><b>${dn}/${ts.length}</b></div><div class="bar"><i style="width:${w}%"></i></div></div>`;
+  }).join('');
+  document.querySelector('#metTable tbody').innerHTML=[1,2,3,4].map(w=>{
+    const ts=p.filter(t=>t.w===w), dn=ts.filter(t=>t.done).length;
+    const estado = dn===ts.length?'<span class="pill ok">Completa</span>' : (w<sem?'<span class="pill warn">Pendiente</span>':'<span class="pill">En curso</span>');
+    return `<tr><td>Semana ${w}</td><td>${WEEKFOCUS[w-1]}</td><td>${ts.length}</td><td>${dn}</td><td>${estado}</td></tr>`;
+  }).join('');
+  const rd=document.getElementById('reDiag');
+  if(S.re){
+    rd.innerHTML=`<div class="grid g3" style="margin-top:12px">
+      <div class="stat"><b>${S.score.total}</b><small>Índice día 1</small></div>
+      <div class="stat"><b>${S.re.total}</b><small>Índice día 30</small></div>
+      <div class="stat"><b>${(S.re.total-S.score.total>=0?'+':'')+(S.re.total-S.score.total)}</b><small>Cambio</small></div>
+    </div>`+DIMS.map(d=>{
+      const df=S.re.per[d.id]-S.score.per[d.id];
+      return `<div class="dimrow"><div class="top"><span>${d.name}</span><b>${S.score.per[d.id]} → ${S.re.per[d.id]} (${df>=0?'+':''}${df})</b></div><div class="bar"><i style="width:${S.re.per[d.id]}%"></i></div></div>`;
+    }).join('');
+  }else{
+    rd.innerHTML='<p class="muted">Disponible cuando quieras cerrar el ciclo. Vuelve a responder las 20 preguntas y compara.</p>';
+  }
+}
+
+/* ---------------- navegación ---------------- */
+function go(tab){
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected', b.dataset.tab===tab));
+  document.querySelectorAll('section.panel').forEach(s=>s.classList.toggle('on', s.id==='p-'+tab));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{ if(!b.disabled) go(b.dataset.tab); }));
+
+['fName','fRole','fTopic'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',e=>{
+    S[{fName:'name',fRole:'role',fTopic:'topic'}[id]]=e.target.value; save();
+  });
+});
+
+let reMode=false;
+document.getElementById('btnCalc').addEventListener('click',()=>{
+  if(Object.keys(S.answers).length<20){ alert('Responde las 20 preguntas para calcular tu índice.'); return; }
+  if(reMode){
+    S.re=computeScore(S.answers); reMode=false; save(); unlock(); renderMetrics(); go('met'); return;
+  }
+  S.score=computeScore(S.answers); if(!S.start) S.start=Date.now();
+  save(); unlock(); showResults(); go('res');
+});
+document.getElementById('btnPlan').addEventListener('click',()=>{
+  if(!S.plan) S.plan=buildPlan();
+  save(); renderPlan(); renderMetrics(); unlock(); go('plan');
+});
+document.getElementById('btnRe').addEventListener('click',()=>{
+  reMode=true; S.answers={}; renderQuestions(); go('diag');
+  alert('Responde de nuevo las 20 preguntas. Al terminar, presiona "Ver mis resultados" para comparar.');
+});
+document.getElementById('btnReset').addEventListener('click',()=>{
+  if(confirm('Se borrarán tus respuestas, tu plan y tu avance. ¿Continuar?')){ S=newState(); save(); location.reload(); }
+});
+document.getElementById('btnRestart').addEventListener('click',()=>{
+  if(confirm('Se reinicia el contador de 30 días y se desmarcan las acciones. ¿Continuar?')){
+    S.start=Date.now(); S.plan.forEach(t=>t.done=false); save(); renderPlan(); renderMetrics();
+  }
+});
+document.getElementById('btnExport').addEventListener('click',()=>{
+  const rows=[['Semana','Dimension','Accion','Como','Estado']];
+  S.plan.forEach(t=>rows.push([t.w,DIMS.find(d=>d.id===t.dim).name,t.t,t.h.replace(/"/g,"'"),t.done?'Hecha':'Pendiente']));
+  const csv='\ufeff'+rows.map(r=>r.map(c=>'"'+c+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='plan-30-dias-'+(S.name||'brujula').replace(/\s+/g,'-').toLowerCase()+'.csv';
+  a.click();
+});
+
+function unlock(){
+  document.getElementById('tabRes').disabled = !S.score;
+  document.getElementById('tabPlan').disabled = !S.plan;
+  document.getElementById('tabMet').disabled = !S.plan;
+}
+let saveTimer;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    await store.set(KEY,S);
+    const f=document.getElementById('saveFlag'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),1200);
+  },250);
+}
+
+/* ---------------- init ---------------- */
+(async function init(){
+  S = await store.get(KEY) || newState();
+  document.getElementById('fName').value=S.name||'';
+  document.getElementById('fRole').value=S.role||'';
+  document.getElementById('fTopic').value=S.topic||'';
+  renderQuestions();
+  unlock();
+  if(S.score) showResults();
+  if(S.plan){ renderPlan(); renderMetrics(); }
+})();
+</script>
