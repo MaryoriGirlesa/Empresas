@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reto Digital · Ciudadanía y Seguridad frente a la IA</title>
+<style>
+  :root{
+    --bg:#0e1020; --bg2:#161a35; --card:#1d2246; --card2:#252c5c;
+    --accent:#5ce1e6; --accent2:#a78bfa; --good:#34d399; --bad:#f87171;
+    --warn:#fbbf24; --text:#f4f6ff; --muted:#9aa3c7; --line:#2e3563;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:radial-gradient(1200px 800px at 50% -10%,#1b2350 0%,var(--bg) 60%);
+    color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:16px;
+  }
+  .app{width:100%;max-width:520px}
+  .card{
+    background:linear-gradient(180deg,var(--card),var(--bg2));
+    border:1px solid var(--line);border-radius:22px;padding:26px 22px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);position:relative;overflow:hidden;
+  }
+  .card::before{content:"";position:absolute;top:-40%;right:-30%;width:280px;height:280px;
+    background:radial-gradient(circle,rgba(92,225,230,.18),transparent 70%);pointer-events:none}
+  .badge{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+    letter-spacing:.5px;text-transform:uppercase;color:var(--accent);
+    background:rgba(92,225,230,.12);padding:6px 12px;border-radius:999px;margin-bottom:16px}
+  h1{font-size:26px;line-height:1.2;margin-bottom:10px}
+  h2{font-size:20px;line-height:1.3;margin-bottom:14px}
+  p.lead{color:var(--muted);font-size:15px;line-height:1.55;margin-bottom:22px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;
+    font-size:13px;color:var(--muted)}
+  .pill{background:var(--card2);border:1px solid var(--line);border-radius:999px;
+    padding:6px 12px;font-weight:700;color:var(--text)}
+  .pill b{color:var(--accent)}
+  .progress{height:8px;background:var(--card2);border-radius:999px;overflow:hidden;margin-bottom:22px}
+  .progress > i{display:block;height:100%;width:0;border-radius:999px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s ease}
+  .q{font-size:19px;font-weight:700;line-height:1.35;margin-bottom:18px}
+  .opts{display:flex;flex-direction:column;gap:12px}
+  button.opt{
+    text-align:left;background:var(--card2);border:1.5px solid var(--line);color:var(--text);
+    padding:15px 16px;border-radius:14px;font-size:15px;cursor:pointer;transition:.15s;
+    display:flex;align-items:center;gap:12px;line-height:1.35;
+  }
+  button.opt:hover{border-color:var(--accent2);transform:translateY(-2px)}
+  button.opt .k{flex:0 0 26px;height:26px;border-radius:8px;background:var(--bg2);
+    display:grid;place-items:center;font-weight:800;font-size:13px;color:var(--accent)}
+  button.opt.correct{border-color:var(--good);background:rgba(52,211,153,.14)}
+  button.opt.wrong{border-color:var(--bad);background:rgba(248,113,113,.14)}
+  button.opt.dim{opacity:.5}
+  button.opt:disabled{cursor:default}
+  .sr{display:flex;gap:12px}
+  .sr button{flex:1;font-size:16px;font-weight:800;padding:18px 10px;border-radius:16px;
+    cursor:pointer;border:2px solid var(--line);transition:.15s}
+  .sr .safe{background:rgba(52,211,153,.1);color:var(--good);border-color:rgba(52,211,153,.4)}
+  .sr .risk{background:rgba(248,113,113,.1);color:var(--bad);border-color:rgba(248,113,113,.4)}
+  .sr button:hover{transform:translateY(-2px)}
+  .scene{background:var(--card2);border:1px solid var(--line);border-radius:14px;
+    padding:16px;font-size:15.5px;line-height:1.5;margin-bottom:18px}
+  .feedback{margin-top:18px;padding:14px 16px;border-radius:14px;font-size:14.5px;
+    line-height:1.5;display:none}
+  .feedback.show{display:block;animation:fade .3s ease}
+  .feedback.ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4)}
+  .feedback.no{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.4)}
+  .feedback b{color:var(--accent)}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+  .btn{display:block;width:100%;margin-top:22px;padding:16px;border-radius:14px;border:none;
+    font-size:16px;font-weight:800;cursor:pointer;color:#0e1020;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.15s}
+  .btn:hover{filter:brightness(1.08);transform:translateY(-2px)}
+  .btn.ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
+  .center{text-align:center}
+  .emoji{font-size:52px;margin-bottom:8px;display:block}
+  .score-big{font-size:60px;font-weight:900;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
+  .rank{font-size:22px;font-weight:800;margin:6px 0 4px}
+  .stars{display:flex;justify-content:center;gap:6px;margin:14px 0;font-size:26px}
+  .tips{text-align:left;background:var(--card2);border:1px solid var(--line);
+    border-radius:14px;padding:16px;margin-top:18px;font-size:14px;line-height:1.6;color:var(--muted)}
+  .tips b{color:var(--text)}
+  .tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.5px;padding:4px 10px;border-radius:999px;margin-bottom:14px}
+  .tag.tri{background:rgba(167,139,250,.15);color:var(--accent2)}
+  .tag.sr{background:rgba(251,191,36,.15);color:var(--warn)}
+  .tag.sc{background:rgba(92,225,230,.15);color:var(--accent)}
+  .fade-in{animation:fade .35s ease}
+  .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="card" id="card"></div>
+  <div class="foot">Reto Digital · 8 min · Ciudadanía y seguridad frente a la IA</div>
+</div>
+
+<script>
+/* ====== CONTENIDO ====== */
+const TRIVIA = [
+  {
+    q:"¿Cuál de estas es la contraseña MÁS segura?",
+    opts:[
+      {t:"MiNombre2008", ok:false},
+      {t:"12345678", ok:false},
+      {t:"Caf3_yLluvia@Martes!", ok:true},
+      {t:"password", ok:false}
+    ],
+    fb:"Una contraseña fuerte es larga (12+), mezcla mayúsculas, números y símbolos, y NO usa tu nombre ni tu fecha de nacimiento. La IA puede adivinar millones de combinaciones simples por segundo."
+  },
+  {
+    q:"Una IA puede crear un 'deepfake' con solo unas fotos tuyas de redes. ¿Qué reduce ese riesgo?",
+    opts:[
+      {t:"Subir muchas selfies para 'confundirla'", ok:false},
+      {t:"Tener el perfil privado y cuidar quién ve tus fotos", ok:true},
+      {t:"Usar el mismo filtro siempre", ok:false},
+      {t:"Etiquetar a todos tus amigos", ok:false}
+    ],
+    fb:"Mientras menos fotos tuyas circulen públicamente, menos material tiene una IA para clonar tu rostro o tu voz. Perfiles privados y control de audiencia = menos riesgo."
+  },
+  {
+    q:"¿Qué es tu 'rastro digital' (huella digital)?",
+    opts:[
+      {t:"Solo lo que publicas en tu perfil", ok:false},
+      {t:"Todo lo que dejas en línea: posts, likes, búsquedas, ubicación y comentarios", ok:true},
+      {t:"Únicamente tus contraseñas", ok:false},
+      {t:"Los virus de tu celular", ok:false}
+    ],
+    fb:"Tu rastro digital es TODO lo que dejas: publicaciones, reacciones, ubicaciones, chats y búsquedas. Muchas veces es permanente, aunque borres el post original."
+  }
+];
+
+const SITUACIONES = [
+  {
+    t:"Un chatbot de IA te pide tu correo y contraseña para 'personalizar' tus respuestas.",
+    safe:false,
+    fb:"RIESGOSO. Ningún servicio legítimo necesita tu contraseña para funcionar. Nunca compartas credenciales con un chatbot o formulario que no reconoces."
+  },
+  {
+    t:"Activas la verificación en dos pasos (2FA) en tu cuenta de redes.",
+    safe:true,
+    fb:"SEGURO. La verificación en dos pasos es una de las mejores defensas: aunque roben tu contraseña, necesitan un segundo código para entrar."
+  },
+  {
+    t:"Publicas una foto de tu boleto de avión con tu nombre y código de barras visibles.",
+    safe:false,
+    fb:"RIESGOSO. Ese código contiene datos personales y de tu reserva. Fotos así entregan información que puede usarse para suplantarte."
+  },
+  {
+    t:"Antes de reenviar un video 'impactante', verificas si es real o hecho con IA.",
+    safe:true,
+    fb:"SEGURO. Ser ciudadano digital responsable incluye no difundir desinformación. Verificar antes de compartir corta la cadena de contenido falso."
+  }
+];
+
+const ESCENA = [
+  {
+    txt:"Un juego nuevo te ofrece skins gratis si inicias sesión con tu cuenta de Instagram desde un enlace que te pasaron por chat.",
+    opts:[
+      {t:"Entro con mi cuenta, total son gratis", d:-2, fb:"Ese enlace puede robar tu sesión (phishing). Entregaste el acceso a tu cuenta."},
+      {t:"Reviso si es la web oficial y, si dudo, no entro", d:2, fb:"Perfecto: verificar el enlace antes de dar acceso protege tu identidad digital."}
+    ]
+  },
+  {
+    txt:"Vas a crear la contraseña de tu nueva cuenta.",
+    opts:[
+      {t:"Uso la misma de siempre para no olvidarla", d:-2, fb:"Reutilizar contraseñas es peligroso: si filtran una, caen todas tus cuentas."},
+      {t:"Creo una única y larga, y la guardo en un gestor", d:2, fb:"Una contraseña distinta y fuerte por cuenta es la práctica más recomendada."}
+    ]
+  },
+  {
+    txt:"Un 'amigo' que acabas de conocer en línea te pide una foto tuya y tu ubicación.",
+    opts:[
+      {t:"Se la mando, parece buena onda", d:-3, fb:"No compartas imágenes ni ubicación con desconocidos: no sabes cómo las usarán."},
+      {t:"No comparto datos personales con alguien que no conozco en persona", d:3, fb:"Excelente decisión: proteger tu imagen y ubicación es clave de tu seguridad."}
+    ]
+  }
+];
+
+/* ====== ESTADO ====== */
+let stage=0;   // 0 intro, 1 trivia, 2 sit, 3 escena, 4 final
+let idx=0;
+let score=0;
+let rep=0;     // reputación digital escena
+const TOTAL = TRIVIA.length + SITUACIONES.length + ESCENA.length;
+const PTS_TRIVIA=15, PTS_SIT=10, PTS_SCENE=15;
+const MAXSCORE = TRIVIA.length*PTS_TRIVIA + SITUACIONES.length*PTS_SIT + ESCENA.length*PTS_SCENE;
+const card = document.getElementById('card');
+
+function step(){ // paso global para la barra
+  if(stage===1) return idx;
+  if(stage===2) return TRIVIA.length+idx;
+  if(stage===3) return TRIVIA.length+SITUACIONES.length+idx;
+  return 0;
+}
+function progressBar(){
+  const pct = Math.round((step()/TOTAL)*100);
+  return `<div class="topbar">
+      <span class="pill">Puntos <b>${score}</b></span>
+      <span>${step()+1} / ${TOTAL}</span>
+    </div>
+    <div class="progress"><i style="width:${pct}%"></i></div>`;
+}
+
+/* ====== PANTALLAS ====== */
+function intro(){
+  card.innerHTML = `<div class="fade-in">
+    <span class="badge">🛡️ Reto Digital</span>
+    <h1>¿Qué tan seguro eres frente a la IA?</h1>
+    <p class="lead">3 rondas rápidas para poner a prueba tu <b style="color:var(--accent)">ciudadanía y seguridad digital</b>: contraseñas, tu imagen y el rastro que dejas en línea. Suma puntos y descubre tu nivel de ciudadano digital.</p>
+    <div class="tips">
+      <b>Ronda 1 · Trivia</b> — conocimiento base<br>
+      <b>Ronda 2 · ¿Seguro o riesgoso?</b> — reacciona rápido<br>
+      <b>Ronda 3 · Tus decisiones</b> — cuida tu reputación digital
+    </div>
+    <button class="btn" onclick="startTrivia()">Empezar reto ▶</button>
+  </div>`;
+}
+
+function startTrivia(){ stage=1; idx=0; renderTrivia(); }
+function renderTrivia(){
+  const item = TRIVIA[idx];
+  card.innerHTML = `<div class="fade-in">
+    ${progressBar()}
+    <span class="tag tri">Ronda 1 · Trivia</span>
+    <div class="q">${item.q}</div>
+    <div class="opts" id="opts"></div>
+    <div class="feedback" id="fb"></div>
+    <button class="btn" id="next" style="display:none">Siguiente ▶</button>
+  </div>`;
+  const box=document.getElementById('opts');
+  const keys=['A','B','C','D'];
+  item.opts.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt'; b.innerHTML=`<span class="k">${keys[i]}</span><span>${o.t}</span>`;
+    b.onclick=()=>answerTrivia(i);
+    box.appendChild(b);
+  });
+}
+function answerTrivia(i){
+  const item=TRIVIA[idx];
+  const btns=[...document.querySelectorAll('#opts .opt')];
+  btns.forEach((b,j)=>{
+    b.disabled=true;
+    if(item.opts[j].ok) b.classList.add('correct');
+    else if(j===i) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  const ok=item.opts[i].ok;
+  if(ok) score+=PTS_TRIVIA;
+  const fb=document.getElementById('fb');
+  fb.className='feedback show '+(ok?'ok':'no');
+  fb.innerHTML=`${ok?'✅ <b>+'+PTS_TRIVIA+' pts</b> · ':'❌ '}${item.fb}`;
+  const n=document.getElementById('next');
+  n.style.display='block';
+  n.onclick=()=>{ idx++; idx<TRIVIA.length?renderTrivia():startSit(); };
+}
+
+function startSit(){ stage=2; idx=0; renderSit(); }
+function renderSit(){
+  const s=SITUACIONES[idx];
+  card.innerHTML=`<div class="fade-in">
+    ${progressBar()}
+    <span class="tag sr">Ronda 2 · ¿Seguro o riesgoso?</span>
+    <div class="scene">${s.t}</div>
+    <div class="sr">
+      <button class="safe" onclick="answerSit(true)">✔ Seguro</button>
+      <button class="risk" onclick="answerSit(false)">⚠ Riesgoso</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+    <button class="btn" id="next" style="display:none">Siguiente ▶</button>
+  </div>`;
+}
+function answerSit(choice){
+  const s=SITUACIONES[idx];
+  document.querySelectorAll('.sr button').forEach(b=>b.disabled=true);
+  const ok = choice===s.safe;
+  if(ok) score+=PTS_SIT;
+  const fb=document.getElementById('fb');
+  fb.className='feedback show '+(ok?'ok':'no');
+  fb.innerHTML=`${ok?'✅ <b>+'+PTS_SIT+' pts</b> · ':'❌ '}${s.fb}`;
+  const n=document.getElementById('next'); n.style.display='block';
+  n.onclick=()=>{ idx++; idx<SITUACIONES.length?renderSit():startScene(); };
+}
+
+function startScene(){ stage=3; idx=0; renderScene(); }
+function renderScene(){
+  const e=ESCENA[idx];
+  card.innerHTML=`<div class="fade-in">
+    ${progressBar()}
+    <span class="tag sc">Ronda 3 · Tus decisiones</span>
+    <div class="scene">${e.txt}</div>
+    <div class="opts" id="opts"></div>
+    <div class="feedback" id="fb"></div>
+    <button class="btn" id="next" style="display:none">Continuar ▶</button>
+  </div>`;
+  const box=document.getElementById('opts');
+  e.opts.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt'; b.innerHTML=`<span class="k">${i+1}</span><span>${o.t}</span>`;
+    b.onclick=()=>answerScene(i);
+    box.appendChild(b);
+  });
+}
+function answerScene(i){
+  const e=ESCENA[idx]; const o=e.opts[i];
+  const btns=[...document.querySelectorAll('#opts .opt')];
+  btns.forEach((b,j)=>{b.disabled=true; if(j!==i)b.classList.add('dim');});
+  const good=o.d>0;
+  btns[i].classList.add(good?'correct':'wrong');
+  if(good) score+=PTS_SCENE;
+  rep+=o.d;
+  const fb=document.getElementById('fb');
+  fb.className='feedback show '+(good?'ok':'no');
+  fb.innerHTML=`${good?'✅ <b>+'+PTS_SCENE+' pts</b> · ':'❌ '}${o.fb}`;
+  const n=document.getElementById('next'); n.style.display='block';
+  n.onclick=()=>{ idx++; idx<ESCENA.length?renderScene():finalScreen(); };
+}
+
+function finalScreen(){
+  stage=4;
+  const pct=Math.round((score/MAXSCORE)*100);
+  let rank, emoji, msg;
+  if(pct>=85){rank="Guardián Digital";emoji="🛡️";msg="¡Impresionante! Proteges tu identidad como un profesional.";}
+  else if(pct>=60){rank="Ciudadano Consciente";emoji="🧠";msg="Muy bien. Tienes buenos hábitos, sigue afinando los detalles.";}
+  else if(pct>=35){rank="Aprendiz Digital";emoji="🌱";msg="Vas por buen camino. Refuerza contraseñas y cuida tu rastro.";}
+  else {rank="Zona de Riesgo";emoji="⚠️";msg="¡Ojo! Es momento de reforzar tu seguridad en línea.";}
+  const fullStars=Math.round(pct/20);
+  let stars=''; for(let i=0;i<5;i++) stars+= i<fullStars?'⭐':'▫️';
+  card.innerHTML=`<div class="fade-in center">
+    <span class="emoji">${emoji}</span>
+    <div class="score-big">${score}</div>
+    <div style="color:var(--muted);font-size:13px;margin:6px 0 2px">de ${MAXSCORE} puntos · ${pct}%</div>
+    <div class="stars">${stars}</div>
+    <div class="rank">${rank}</div>
+    <p class="lead" style="margin:8px 0 0">${msg}</p>
+    <div class="tips">
+      <b>3 reglas para llevarte:</b><br>
+      🔑 Contraseñas largas, únicas y con 2FA.<br>
+      🖼️ Cuida tu imagen: menos fotos públicas, menos material para la IA.<br>
+      👣 Tu rastro es casi permanente: piensa antes de publicar.
+    </div>
+    <button class="btn" onclick="reset()">Jugar de nuevo 🔁</button>
+    <button class="btn ghost" onclick="intro()">Volver al inicio</button>
+  </div>`;
+}
+function reset(){ stage=0; idx=0; score=0; rep=0; startTrivia(); }
+
+intro();
+</script>
+</body>
+</html>
